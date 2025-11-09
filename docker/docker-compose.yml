@@ -1,0 +1,14 @@
+services:
+  lamports-factory:
+    container_name: lamports-factory
+    image: ghcr.io/example/lamports-factory:latest
+    environment:
+      TEX_DIR: /app/workspace/tex
+      OUT_DIR: /app/workspace/tex/build
+      TEX_MAIN: main.tex
+      RELOAD_MODE: sse
+    volumes:
+      - ../workspace:/app/workspace
+    ports:
+      - "8080:8080"
+    restart: unless-stopped

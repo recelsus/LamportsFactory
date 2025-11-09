@@ -1,0 +1,38 @@
+\documentclass[a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\usepackage{listings}
+\geometry{margin=25mm}
+
+\title{Sample Document}
+\author{LamportsFactory Sample}
+\date{December 2025}
+
+\lstset{basicstyle=\ttfamily\small, frame=single, columns=flexible, keepspaces=true}
+
+\begin{document}
+\maketitle
+
+\section{Overview}
+This is an additional sample document placed under \verb|workspace/tex/sample.tex|. Use it to verify the document switching logic between multiple \LaTeX{} sources.
+
+\section{Code Listing}
+\begin{lstlisting}[language=Python]
+def fibonacci(n):
+    if n <= 1:
+        return n
+    return fibonacci(n - 1) + fibonacci(n - 2)
+\end{lstlisting}
+
+\section{Table}
+\begin{tabular}{lrr}
+\hline
+Item & Quantity & Price\\
+\hline
+Apples & 4 & 120\\
+Oranges & 6 & 180\\
+Peaches & 3 & 210\\
+\hline
+\end{tabular}
+
+\end{document}

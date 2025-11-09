@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>LamportsFactory Preview</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="status-bar" id="status-bar">idle</header>
+  <div class="layout">
+    <aside class="sidebar">
+      <h1>Documents</h1>
+      <div class="tex-list-container">
+        <ul id="tex-list" class="tex-list"></ul>
+      </div>
+    </aside>
+    <main class="main-area">
+      <section class="controls">
+        <div class="status-detail" id="status-detail">waiting for build</div>
+      </section>
+      <section class="viewer">
+        <iframe id="pdf-frame" src="/pdf" title="LaTeX preview"></iframe>
+      </section>
+    </main>
+  </div>
+  <script src="/static/client.js" defer></script>
+</body>
+</html>

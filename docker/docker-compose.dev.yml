@@ -1,0 +1,17 @@
+services:
+  lamports-factory:
+    container_name: lamports-factory
+    image: lamports-factory:dev
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    environment:
+      TEX_DIR: /app/workspace/tex
+      OUT_DIR: /app/workspace/tex/build
+      TEX_MAIN: main.tex
+      RELOAD_MODE: sse
+    volumes:
+      - ../workspace:/app/workspace
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
