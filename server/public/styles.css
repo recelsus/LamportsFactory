@@ -180,6 +180,7 @@ body {
   overflow: hidden;
   background: #0f0f10;
   min-height: 0;
+  position: relative;
 }
 
 .terminal-pane {
@@ -190,12 +191,71 @@ body {
   min-height: 0;
 }
 
-.viewer iframe,
 .terminal-pane iframe {
   width: 100%;
   height: 100%;
   border: none;
   background: #fff;
+}
+
+.pdf-canvas-scroll {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+#pdf-canvas {
+  flex: 0 0 auto;
+  background: #fff;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 35%);
+}
+
+.pdf-toolbar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 34px;
+  padding: 4px;
+  border: 1px solid #2c2f36;
+  border-radius: 6px;
+  background: rgb(17 19 24 / 92%);
+  backdrop-filter: blur(6px);
+}
+
+.pdf-tool-button {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+}
+
+.pdf-tool-button:hover {
+  border-color: #3f7ae0;
+  background: #232630;
+}
+
+.pdf-tool-label {
+  min-width: 44px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #d8dce8;
 }
 
 

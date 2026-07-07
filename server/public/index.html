@@ -23,13 +23,25 @@
     </aside>
     <main class="main-area">
       <section class="viewer">
-        <iframe id="pdf-frame" src="/pdf" title="LaTeX preview"></iframe>
+        <div class="pdf-toolbar" id="pdf-toolbar" aria-label="PDF tools">
+          <button type="button" class="pdf-tool-button" data-pdf-action="previous_page" title="Previous page" aria-label="Previous page">‹</button>
+          <span class="pdf-tool-label" id="pdf-page-label">0/0</span>
+          <button type="button" class="pdf-tool-button" data-pdf-action="next_page" title="Next page" aria-label="Next page">›</button>
+          <button type="button" class="pdf-tool-button" data-pdf-action="zoom_out" title="Zoom out" aria-label="Zoom out">−</button>
+          <span class="pdf-tool-label" id="pdf-zoom-label">100%</span>
+          <button type="button" class="pdf-tool-button" data-pdf-action="zoom_in" title="Zoom in" aria-label="Zoom in">+</button>
+          <button type="button" class="pdf-tool-button" data-pdf-action="rotate" title="Rotate" aria-label="Rotate">↻</button>
+          <button type="button" class="pdf-tool-button" data-pdf-action="download" title="Download" aria-label="Download">↓</button>
+        </div>
+        <div class="pdf-canvas-scroll">
+          <canvas id="pdf-canvas"></canvas>
+        </div>
       </section>
       <section class="terminal-pane" id="terminal-pane" hidden>
         <iframe id="terminal-frame" title="Terminal"></iframe>
       </section>
     </main>
   </div>
-  <script src="/static/client.js" defer></script>
+  <script type="module" src="/static/client.js"></script>
 </body>
 </html>

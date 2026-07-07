@@ -20,7 +20,7 @@ services:
       RELOAD_MODE: sse
       # layout mode examples: preview | split
       # If TTYD_ENABLED is disable, split falls back to preview.
-      LAYOUT_MODE: split
+      LAYOUT_MODE: preview # split
       NVIM_CONFIG_REPO: "https://github.com/recelsus/nvim.git"
       # bootstrap examples: enable | disable
       NVIM_BOOTSTRAP_ON_INIT: enable
