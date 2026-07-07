@@ -1,3 +1,0 @@
-[submodule "server/third_party/clask"]
-	path = server/third_party/clask
-	url = https://github.com/mattn/clask.git

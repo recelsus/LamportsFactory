@@ -3,11 +3,11 @@
 #include <set>
 #include <string>
 
-#include "app/build_log_buffer.hpp"
-#include "app/build_manager.hpp"
-#include "app/config.hpp"
-#include "app/event_bus.hpp"
-#include "app/file_watcher.hpp"
+#include "app/build/build_log_buffer.hpp"
+#include "app/build/build_manager.hpp"
+#include "app/config/config.hpp"
+#include "app/events/event_bus.hpp"
+#include "app/watch/file_watcher.hpp"
 #include "app/http/server_handle.hpp"
 #include "version.h"
 
@@ -40,9 +40,8 @@ int main(int argc, char** argv) {
 
   const lf::app_config config = lf::load_app_config();
   std::filesystem::create_directories(config.tex_dir);
-  std::filesystem::create_directories(config.out_dir);
 
-  lf::set_clask_log_level(config.log_level_choice);
+  lf::set_http_log_level(config.log_level_choice);
 
   lf::build_log_buffer log_buffer(config.build_log_buffer_lines);
   lf::event_bus bus;

@@ -1,9 +1,14 @@
 services:
   lamports-factory:
-    image: ghcr.io/example/lamports-factory:latest
+    image: lamports-factory:local
     container_name: lamports-factory
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: dev
     environment:
       BASE_URL: /
+      STATIC_DIR: /src/server/public
       TEX_DIR: /app/workspace
       BUILD_DIR_NAME: build
       TEX_MAIN: sample/main.tex
@@ -16,12 +21,13 @@ services:
       # layout mode examples: preview | split
       # If TTYD_ENABLED is disable, split falls back to preview.
       LAYOUT_MODE: split
-      NVIM_CONFIG_REPO: ""
+      NVIM_CONFIG_REPO: "https://github.com/recelsus/nvim.git"
       # bootstrap examples: enable | disable
       NVIM_BOOTSTRAP_ON_INIT: enable
       # ttyd examples: enable | disable
       TTYD_ENABLED: enable
     volumes:
+      - ..:/src
       - ./workspace:/app/workspace
       - ./volumes/texmf:/app/texmf
       - ./volumes/fonts:/app/fonts

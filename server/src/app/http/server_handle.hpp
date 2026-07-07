@@ -1,9 +1,9 @@
 #pragma once
 
-#include "app/build_log_buffer.hpp"
-#include "app/build_manager.hpp"
-#include "app/config.hpp"
-#include "app/event_bus.hpp"
+#include "app/build/build_log_buffer.hpp"
+#include "app/build/build_manager.hpp"
+#include "app/config/config.hpp"
+#include "app/events/event_bus.hpp"
 
 namespace lf {
 
@@ -20,6 +20,6 @@ private:
   build_log_buffer& log_buffer;
 };
 
-void set_clask_log_level(log_level_setting level);
+void set_http_log_level(log_level_setting level);
 
 }  // namespace lf

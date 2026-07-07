@@ -134,6 +134,12 @@ dist/
 /server/build/
 /server/build-*/
 
+# -----------------------------
+# Local development references
+# -----------------------------
+/reference/
+/docker/volumes/
+
 # third_party builds (submodules / vendored libs)
 third_party/**/build/
 third_party/**/build-*/
@@ -182,5 +188,8 @@ _minted-*/
 # workspace outputs
 /workspace/out/
 /workspace/build/
+/docker/workspace/*
+!/docker/workspace/sample/
+/docker/workspace/sample/*
+!/docker/workspace/sample/main.tex
 # /workspace/.latexmkrc
-
