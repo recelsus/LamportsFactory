@@ -33,11 +33,25 @@ TTYD_FONT_FAMILY="${TTYD_FONT_FAMILY:-JetBrainsMono Nerd Font, Symbols Nerd Font
 REVERSE_PROXY_PORT="${REVERSE_PROXY_PORT:-8080}"
 TTYD_ENABLED="${TTYD_ENABLED:-enable}"
 WORKSPACE_DIR="${WORKSPACE_DIR:-/app/workspace}"
+COMPILER_BACKEND="$(printf '%s' "${COMPILER_BACKEND:-latex}" | tr '[:upper:]' '[:lower:]')"
+case "$COMPILER_BACKEND" in
+  typst)
+    MAIN_DOCUMENT="${MAIN_DOCUMENT:-sample/main.typ}"
+    DOCUMENT_EXTENSION="${DOCUMENT_EXTENSION:-.typ}"
+    ;;
+  *)
+    MAIN_DOCUMENT="${MAIN_DOCUMENT:-sample/main.tex}"
+    DOCUMENT_EXTENSION="${DOCUMENT_EXTENSION:-.tex}"
+    ;;
+esac
 TEXMFHOME="${TEXMFHOME:-/app/texmf}"
 OSFONTDIR="${OSFONTDIR:-/app/fonts}"
 
 export SERVER_ADDR="$APP_INTERNAL_ADDR"
 export SERVER_PORT="$APP_INTERNAL_PORT"
+export COMPILER_BACKEND
+export MAIN_DOCUMENT
+export DOCUMENT_EXTENSION
 export TEXMFHOME
 export OSFONTDIR
 export TERM="${TERM:-xterm-256color}"
@@ -55,7 +69,7 @@ fc-cache -f "$OSFONTDIR" >/dev/null 2>&1 || true
 mktexlsr "$TEXMFHOME" >/dev/null 2>&1 || true
 
 if is_enabled "${NVIM_BOOTSTRAP_ON_INIT:-enable}"; then
-  /usr/local/bin/nvim-latex-bootstrap || echo "nvim latex bootstrap failed; continuing" >&2
+  /usr/local/bin/nvim-bootstrap || echo "nvim bootstrap failed; continuing" >&2
 fi
 
 terminal_path="${BASE_URL}/terminal/"

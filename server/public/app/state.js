@@ -4,6 +4,7 @@ export const app_state = {
   reload_retry_ms: 2000,
   base_url: "",
   layout_mode: "preview",
+  layout_order: "preview-first",
   ttyd_enabled: false,
   ttyd_url: "/terminal/",
   last_pdf_mtime: null,
@@ -23,9 +24,11 @@ export const app_state = {
   terminal_frame: null,
   main_area: null,
   layout_toggle: null,
+  layout_swap_button: null,
   refresh_button: null,
   document_list: null,
   documents: [],
   document_extension: "",
-  current_document: null
+  current_document: null,
+  document_selected: false
 };

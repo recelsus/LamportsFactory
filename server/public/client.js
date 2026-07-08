@@ -1,6 +1,6 @@
 import { app_state } from "./app/state.js";
 import { set_status, set_status_detail } from "./app/status.js";
-import { stored_layout_mode, setup_layout_toggle, apply_layout } from "./app/layout.js";
+import { stored_layout_mode, stored_layout_order, setup_layout_toggle, apply_layout } from "./app/layout.js";
 import { setup_pdf_viewer, reload_pdf as reload_pdf_viewer } from "./app/pdf_preview.js";
 import { load_config, load_documents, select_document as select_document } from "./app/api.js";
 import { fetch_snapshot as fetch_state_snapshot, setup_channel } from "./app/reload_channel.js";
@@ -16,6 +16,7 @@ function bind_elements() {
   app_state.terminal_frame = document.getElementById("terminal-frame");
   app_state.main_area = document.querySelector(".main-area");
   app_state.layout_toggle = document.getElementById("layout-toggle");
+  app_state.layout_swap_button = document.getElementById("layout-swap-button");
   app_state.refresh_button = document.getElementById("refresh-button");
   app_state.document_list = document.getElementById("document-list");
 }
@@ -46,6 +47,7 @@ async function initialize() {
   set_status_detail(app_state, "fetching configuration");
   await load_config(app_state);
   app_state.layout_mode = stored_layout_mode() || app_state.layout_mode;
+  app_state.layout_order = stored_layout_order() || app_state.layout_order;
   setup_layout_toggle(app_state);
   setup_refresh_button(callbacks);
   await setup_pdf_viewer(app_state);

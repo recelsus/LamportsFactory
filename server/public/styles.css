@@ -154,6 +154,22 @@ body {
   flex: 1 1 50%;
 }
 
+.main-area[data-layout="split"] .viewer {
+  order: 1;
+}
+
+.main-area[data-layout="split"] .terminal-pane {
+  order: 2;
+}
+
+.main-area[data-layout="split"][data-layout-order="terminal-first"] .viewer {
+  order: 2;
+}
+
+.main-area[data-layout="split"][data-layout-order="terminal-first"] .terminal-pane {
+  order: 1;
+}
+
 .control-buttons {
   display: none;
 }

@@ -10,7 +10,9 @@
 
 #include "app/build/build_events.hpp"
 #include "app/build/build_log_buffer.hpp"
+#include "app/compiler/compiler_backend_factory.hpp"
 #include "app/compiler/latex_backend.hpp"
+#include "app/compiler/typst_backend.hpp"
 #include "app/common/utils.hpp"
 #include "app/config/config.hpp"
 #include "app/events/event_bus.hpp"
@@ -210,6 +212,57 @@ void test_latex_backend_config() {
              "latexmk override");
 }
 
+void test_typst_backend_config() {
+  env_guard guard({"TYPST_OPTS"});
+  setenv("TYPST_OPTS", "--root . --font-path /app/fonts", 1);
+
+  const lf::typst_backend_config config = lf::load_typst_backend_config();
+  require_eq(config.opts.size(), std::size_t{4}, "typst opts count");
+  require_eq(config.opts[0], std::string("--root"), "typst opts first");
+  require_eq(config.opts[3], std::string("/app/fonts"), "typst opts value");
+}
+
+void test_compiler_backend_factory() {
+  env_guard guard({"LATEX_BUILD_TOOL", "LATEX_ENGINE", "LATEXMK_OPTS",
+                   "TECTONIC_OPTS", "TYPST_OPTS"});
+  auto latex = lf::create_compiler_backend("latex");
+  require(static_cast<bool>(latex), "latex backend factory");
+  require_eq(latex->name(), std::string("latex"), "latex backend name");
+
+  auto typst = lf::create_compiler_backend("typst");
+  require(static_cast<bool>(typst), "typst backend factory");
+  require_eq(typst->name(), std::string("typst"), "typst backend name");
+
+  auto unsupported = lf::create_compiler_backend("unknown");
+  require(!unsupported, "unsupported backend factory");
+}
+
+void test_typst_backend_command() {
+  env_guard guard({"TYPST_OPTS"});
+  unsetenv("TYPST_OPTS");
+  const auto temp = make_temp_dir("typst");
+  lf::app_config config = minimal_config(temp);
+  config.main_document = "doc/main.typ";
+  config.document_extension = ".typ";
+
+  const lf::typst_backend backend(lf::load_typst_backend_config());
+  const lf::compiler_command command =
+      backend.build_command(config, config.main_document);
+
+  require_eq(command.args.size(), std::size_t{4}, "typst command arg count");
+  require_eq(command.args[0], std::string("typst"), "typst command binary");
+  require_eq(command.args[1], std::string("compile"), "typst command mode");
+  require_eq(command.args[2], std::string("doc/main.typ"),
+             "typst command input");
+  require_eq(command.args[3],
+             (temp / "doc" / "build" / "main.pdf").string(),
+             "typst command output");
+  require_eq(command.working_dir.string(), temp.string(),
+             "typst command working dir");
+
+  std::filesystem::remove_all(temp);
+}
+
 void test_workspace_documents() {
   const auto temp = make_temp_dir("workspace");
   write_file(temp / "tex" / "main.tex", "main");
@@ -297,6 +350,9 @@ int main() {
       {"globs_and_paths", test_globs_and_paths},
       {"config_env", test_config_env},
       {"latex_backend_config", test_latex_backend_config},
+      {"typst_backend_config", test_typst_backend_config},
+      {"compiler_backend_factory", test_compiler_backend_factory},
+      {"typst_backend_command", test_typst_backend_command},
       {"workspace_documents", test_workspace_documents},
       {"pdf_response_headers", test_pdf_response_headers},
       {"build_log_buffer", test_build_log_buffer},

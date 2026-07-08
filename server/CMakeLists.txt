@@ -14,7 +14,9 @@ set(LF_CORE_SOURCES
   src/app/common/path_utils.cpp
   src/app/common/time_utils.cpp
   src/app/config/config.cpp
+  src/app/compiler/compiler_backend_factory.cpp
   src/app/compiler/latex_backend.cpp
+  src/app/compiler/typst_backend.cpp
   src/app/events/event_bus.cpp
   src/app/build/build_log_buffer.cpp
   src/app/process/process.cpp

@@ -20,7 +20,6 @@ export async function load_config(state) {
     state.ttyd_enabled = Boolean(config.ttyd_enabled);
     state.ttyd_url = config.ttyd_url || state.ttyd_url;
     state.document_extension = config.document_extension || state.document_extension;
-    state.current_document = config.main_document || state.current_document;
   } catch (_) {
   }
 }
@@ -39,7 +38,7 @@ export async function load_documents(state, select_document) {
     const data = await response.json();
     console.debug("files", data);
     update_documents(state, data.files);
-    if (data.current) {
+    if (state.document_selected && data.current) {
       state.current_document = data.current;
     }
     render_document_list(state, select_document);
@@ -68,6 +67,7 @@ export async function select_document(state, document_path, callbacks) {
     }
     const data = await response.json();
     state.current_document = data.main_document || document_path;
+    state.document_selected = true;
     state.last_pdf_mtime = null;
     render_document_list(state, callbacks.select_document);
     callbacks.reload_pdf(Date.now());

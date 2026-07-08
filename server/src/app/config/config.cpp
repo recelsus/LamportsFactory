@@ -127,7 +127,7 @@ app_config load_app_config() {
   config.out_dir = get_env_string("OUT_DIR", "/app/workspace/build");
   config.build_dir_name = get_env_string(
       "BUILD_DIR_NAME", build_dir_name_from_out_dir(config.out_dir));
-  config.main_document = get_env_string("MAIN_DOCUMENT", "tex/main.tex");
+  config.main_document = get_env_string("MAIN_DOCUMENT", "sample/main.tex");
   config.document_extension =
       normalize_extension(get_env_string("DOCUMENT_EXTENSION", ".tex"));
   config.watch_globs_raw = split_multi_glob(

@@ -189,7 +189,12 @@ _minted-*/
 /workspace/out/
 /workspace/build/
 /docker/workspace/*
-!/docker/workspace/sample/
-/docker/workspace/sample/*
-!/docker/workspace/sample/main.tex
+!/docker/workspace/latex/
+!/docker/workspace/latex/sample/
+/docker/workspace/latex/sample/*
+!/docker/workspace/latex/sample/main.tex
+!/docker/workspace/typst/
+!/docker/workspace/typst/sample/
+/docker/workspace/typst/sample/*
+!/docker/workspace/typst/sample/main.typ
 # /workspace/.latexmkrc

@@ -22,11 +22,11 @@ export async function fetch_snapshot(state, callbacks) {
     const snapshot = await response.json();
     console.debug("snapshot", snapshot);
     update_documents(state, snapshot.files);
-    if (snapshot.main_document && snapshot.main_document !== state.current_document) {
+    if (state.document_selected && snapshot.main_document && snapshot.main_document !== state.current_document) {
       state.current_document = snapshot.main_document;
       render_document_list(state, callbacks.select_document);
     }
-    if (typeof snapshot.pdf_mtime === "number" && snapshot.pdf_mtime !== state.last_pdf_mtime) {
+    if (state.document_selected && typeof snapshot.pdf_mtime === "number" && snapshot.pdf_mtime !== state.last_pdf_mtime) {
       state.last_pdf_mtime = snapshot.pdf_mtime;
       callbacks.reload_pdf(snapshot.pdf_mtime);
     }
@@ -56,7 +56,7 @@ export async function fetch_snapshot(state, callbacks) {
 function dispatch_event(state, name, payload, callbacks) {
   switch (name) {
     case "build_start":
-      if (payload && payload.main_document) {
+      if (state.document_selected && payload && payload.main_document) {
         state.current_document = payload.main_document;
         render_document_list(state, callbacks.select_document);
       }
@@ -66,7 +66,7 @@ function dispatch_event(state, name, payload, callbacks) {
         : "running build");
       break;
     case "build_ok": {
-      if (payload && payload.main_document) {
+      if (state.document_selected && payload && payload.main_document) {
         state.current_document = payload.main_document;
         render_document_list(state, callbacks.select_document);
       }
@@ -74,13 +74,15 @@ function dispatch_event(state, name, payload, callbacks) {
         ? payload.pdf_mtime
         : Date.now();
       state.last_pdf_mtime = mtime;
-      callbacks.reload_pdf(mtime);
+      if (state.document_selected) {
+        callbacks.reload_pdf(mtime);
+      }
       set_status(state, `updated ${format_time_label(mtime)}`, "idle");
       set_status_detail(state, `duration ${payload && payload.duration_ms ? payload.duration_ms : 0} ms`);
       break;
     }
     case "build_fail":
-      if (payload && payload.main_document) {
+      if (state.document_selected && payload && payload.main_document) {
         state.current_document = payload.main_document;
         render_document_list(state, callbacks.select_document);
       }
@@ -91,12 +93,14 @@ function dispatch_event(state, name, payload, callbacks) {
       if (!payload || typeof payload.pdf_mtime !== "number") {
         break;
       }
-      if (payload.main_document) {
+      if (state.document_selected && payload.main_document) {
         state.current_document = payload.main_document;
         render_document_list(state, callbacks.select_document);
       }
       state.last_pdf_mtime = payload.pdf_mtime;
-      callbacks.reload_pdf(payload.pdf_mtime);
+      if (state.document_selected) {
+        callbacks.reload_pdf(payload.pdf_mtime);
+      }
       break;
     default:
       break;

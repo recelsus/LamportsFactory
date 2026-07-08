@@ -28,15 +28,15 @@ ARG USER_ID=1000
 ARG GROUP_ID=1000
 ARG NVIM_VERSION=v0.11.3
 ARG TTYD_VERSION=1.7.7
+ARG TYPST_VERSION=latest
+ARG DOCUMENT_BACKEND=latex
 
 ENV DEBIAN_FRONTEND=noninteractive \
     APP_HOME=/app \
     HOME=/app \
     WORKSPACE_DIR=/app/workspace \
     BUILD_DIR_NAME=build \
-    MAIN_DOCUMENT=sample/main.tex \
-    DOCUMENT_EXTENSION=.tex \
-    COMPILER_BACKEND=latex \
+    COMPILER_BACKEND=${DOCUMENT_BACKEND} \
     LATEX_BUILD_TOOL=latexmk \
     LATEX_ENGINE=lualatex \
     BASE_URL=/ \
@@ -73,8 +73,6 @@ RUN apt-get update \
        fzf \
        git \
        jq \
-       latex-cjk-all \
-       latexmk \
        make \
        ncurses-term \
        nginx-light \
@@ -84,13 +82,6 @@ RUN apt-get update \
        python3 \
        python3-pygments \
        ripgrep \
-       texlive-fonts-recommended \
-       texlive-lang-japanese \
-       texlive-latex-base \
-       texlive-latex-extra \
-       texlive-latex-recommended \
-       texlive-luatex \
-       texlive-xetex \
        tini \
        tmux \
        unzip \
@@ -108,6 +99,37 @@ RUN apt-get update \
     && rm -f /tmp/nvim.tar.gz \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+RUN if [ "${DOCUMENT_BACKEND}" = "latex" ]; then \
+      apt-get update \
+      && apt-get install -y --no-install-recommends \
+         biber \
+         latex-cjk-all \
+         latexmk \
+         texlive-fonts-recommended \
+         texlive-lang-japanese \
+         texlive-latex-base \
+         texlive-latex-extra \
+         texlive-latex-recommended \
+         texlive-luatex \
+         texlive-xetex \
+      && apt-get clean \
+      && rm -rf /var/lib/apt/lists/*; \
+    elif [ "${DOCUMENT_BACKEND}" = "typst" ]; then \
+      if [ "${TYPST_VERSION}" = "latest" ]; then \
+        typst_url="https://github.com/typst/typst/releases/latest/download/typst-x86_64-unknown-linux-musl.tar.xz"; \
+      else \
+        typst_url="https://github.com/typst/typst/releases/download/${TYPST_VERSION}/typst-x86_64-unknown-linux-musl.tar.xz"; \
+      fi; \
+      curl -fsSL "$typst_url" -o /tmp/typst.tar.xz \
+      && mkdir -p /tmp/typst \
+      && tar -xJf /tmp/typst.tar.xz -C /tmp/typst --strip-components=1 \
+      && install -m 0755 /tmp/typst/typst /usr/local/bin/typst \
+      && rm -rf /tmp/typst /tmp/typst.tar.xz; \
+    else \
+      echo "unsupported DOCUMENT_BACKEND: ${DOCUMENT_BACKEND}" >&2; \
+      exit 1; \
+    fi
 
 RUN /usr/sbin/groupadd --gid "${GROUP_ID}" "${USER_NAME}" \
     && /usr/sbin/useradd --uid "${USER_ID}" --gid "${GROUP_ID}" --home-dir "${APP_HOME}" --shell /bin/bash "${USER_NAME}"
@@ -132,12 +154,12 @@ RUN mkdir -p \
 
 COPY --from=builder /tmp/out/lamportsfactory /usr/local/bin/lamportsfactory
 COPY --from=builder /tmp/out/public/ "${APP_HOME}/public/"
-COPY docker/entrypoint.sh /usr/local/bin/lamportsfactory-entrypoint
-COPY docker/nvim-latex-bootstrap.sh /usr/local/bin/nvim-latex-bootstrap
-COPY docker/build-server-in-container.sh /usr/local/bin/build-server-in-container
-COPY docker/tmux.conf /etc/lamportsfactory-tmux.conf
+COPY docker/runtime/entrypoint.sh /usr/local/bin/lamportsfactory-entrypoint
+COPY docker/runtime/nvim-bootstrap.sh /usr/local/bin/nvim-bootstrap
+COPY docker/runtime/build-server-in-container.sh /usr/local/bin/build-server-in-container
+COPY docker/runtime/tmux.conf /etc/lamportsfactory-tmux.conf
 
-RUN chmod 0755 /usr/local/bin/lamportsfactory-entrypoint /usr/local/bin/nvim-latex-bootstrap /usr/local/bin/build-server-in-container \
+RUN chmod 0755 /usr/local/bin/lamportsfactory-entrypoint /usr/local/bin/nvim-bootstrap /usr/local/bin/build-server-in-container \
     && chown -R "${USER_ID}":"${GROUP_ID}" "${APP_HOME}" /tmp/nginx-client-body /tmp/nginx-proxy /tmp/nginx-fastcgi /tmp/nginx-uwsgi /tmp/nginx-scgi
 
 USER "${USER_NAME}"

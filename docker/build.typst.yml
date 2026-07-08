@@ -1,0 +1,43 @@
+services:
+  lamports-factory:
+    image: lamports-factory:typst-local
+    container_name: lamports-factory-typst
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: dev
+      args:
+        DOCUMENT_BACKEND: typst
+    environment:
+      BASE_URL: /
+      STATIC_DIR: /src/server/public
+      WORKSPACE_DIR: /app/workspace
+      BUILD_DIR_NAME: build
+      MAIN_DOCUMENT: sample/main.typ
+      DOCUMENT_EXTENSION: .typ
+      COMPILER_BACKEND: typst
+      # typst examples:
+      # TYPST_OPTS: "--root . --font-path /app/fonts"
+      # reload mode examples: sse | poll | ws
+      RELOAD_MODE: sse
+      # layout mode examples: preview | split
+      # If TTYD_ENABLED is disable, split falls back to preview.
+      LAYOUT_MODE: preview # split
+      NVIM_CONFIG_REPO: "https://github.com/recelsus/nvim.git"
+      # bootstrap examples: enable | disable
+      NVIM_BOOTSTRAP_ON_INIT: enable
+      # ttyd examples: enable | disable
+      TTYD_ENABLED: enable
+      # tmux session name used behind ttyd
+      # TTYD_TMUX_SESSION: lamportsfactory-main
+      # ttyd font examples:
+      # TTYD_FONT_FAMILY: "JetBrainsMono Nerd Font, Symbols Nerd Font Mono, monospace"
+    volumes:
+      - ..:/src
+      - ./workspace/typst:/app/workspace
+      - ./volumes/texmf:/app/texmf
+      - ./volumes/fonts:/app/fonts
+      - ./volumes/nvim:/app/nvim
+    ports:
+      - "8080:8080"
+    restart: unless-stopped

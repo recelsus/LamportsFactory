@@ -1,30 +1,38 @@
 services:
   lamports-factory:
-    image: ghcr.io/example/lamports-factory:latest
+    image: ghcr.io/example/lamports-factory:latex-latest
     container_name: lamports-factory
     environment:
+      # path only. examples: / | /lamports-factory
       BASE_URL: /
       WORKSPACE_DIR: /app/workspace
       BUILD_DIR_NAME: build
-      MAIN_DOCUMENT: sample/main.tex
+      # .tex | .typ
       DOCUMENT_EXTENSION: .tex
-      # compiler backend examples: latex
+      # latex | typst
       COMPILER_BACKEND: latex
-      # latex build tool examples: latexmk | tectonic
+      # typst examples:
+      # MAIN_DOCUMENT: sample/main.typ
+      # DOCUMENT_EXTENSION: .typ
+      # TYPST_OPTS: "--root . --font-path /app/fonts"
+      # optional:
+      # MAIN_DOCUMENT: sample/main.tex
+      # latexmk | tectonic
       LATEX_BUILD_TOOL: latexmk
-      # latex engine examples: lualatex | xelatex | pdflatex | platex | uplatex
+      # lualatex | xelatex | pdflatex | platex | uplatex
       LATEX_ENGINE: lualatex
       # Override latexmk options directly when needed.
       # LATEXMK_OPTS: "-lualatex -interaction=nonstopmode"
-      # reload mode examples: sse | poll | ws
+      # sse | poll | ws
       RELOAD_MODE: sse
-      # layout mode examples: preview | split
+      # preview | split
       # If TTYD_ENABLED is disable, split falls back to preview.
       LAYOUT_MODE: split
-      NVIM_CONFIG_REPO: ""
-      # bootstrap examples: enable | disable
-      NVIM_BOOTSTRAP_ON_INIT: enable
-      # ttyd examples: enable | disable
+      # optional:
+      # NVIM_CONFIG_REPO: "https://github.com/yourname/nvim.git"
+      # enable | disable
+      # NVIM_BOOTSTRAP_ON_INIT: enable
+      # enable | disable
       TTYD_ENABLED: enable
       # tmux session name used behind ttyd
       # TTYD_TMUX_SESSION: lamportsfactory-main
