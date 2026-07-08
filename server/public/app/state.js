@@ -24,7 +24,8 @@ export const app_state = {
   main_area: null,
   layout_toggle: null,
   refresh_button: null,
-  tex_list: null,
-  tex_files: [],
-  current_main: null
+  document_list: null,
+  documents: [],
+  document_extension: "",
+  current_document: null
 };

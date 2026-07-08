@@ -16,8 +16,8 @@ export function app_url(state, path) {
 
 export function build_pdf_url(state, token) {
   const params = new URLSearchParams();
-  if (state.current_main) {
-    params.set("tex", state.current_main);
+  if (state.current_document) {
+    params.set("document", state.current_document);
   }
   params.set("t", token.toString());
   return app_url(state, `/pdf?${params.toString()}`);

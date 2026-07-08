@@ -1,6 +1,6 @@
 import { app_url, normalize_base_url } from "./url.js";
 import { set_status, set_status_detail } from "./status.js";
-import { update_tex_files, render_tex_list } from "./file_tree.js";
+import { update_documents, render_document_list } from "./file_tree.js";
 
 export async function load_config(state) {
   try {
@@ -19,11 +19,13 @@ export async function load_config(state) {
     state.layout_mode = config.layout_mode || state.layout_mode;
     state.ttyd_enabled = Boolean(config.ttyd_enabled);
     state.ttyd_url = config.ttyd_url || state.ttyd_url;
+    state.document_extension = config.document_extension || state.document_extension;
+    state.current_document = config.main_document || state.current_document;
   } catch (_) {
   }
 }
 
-export async function load_tex_files(state, select_tex_document) {
+export async function load_documents(state, select_document) {
   try {
     const response = await fetch(app_url(state, `/api/files`), {
       credentials: "include",
@@ -36,27 +38,27 @@ export async function load_tex_files(state, select_tex_document) {
     }
     const data = await response.json();
     console.debug("files", data);
-    update_tex_files(state, data.files);
+    update_documents(state, data.files);
     if (data.current) {
-      state.current_main = data.current;
+      state.current_document = data.current;
     }
-    render_tex_list(state, select_tex_document);
-    set_status_detail(state, `documents available: ${state.tex_files.length}`);
+    render_document_list(state, select_document);
+    set_status_detail(state, `documents available: ${state.documents.length}`);
   } catch (error) {
     set_status(state, "error", "error");
     set_status_detail(state, `load files error: ${error.message}`);
   }
 }
 
-export async function select_tex_document(state, tex_path, callbacks) {
-  if (!tex_path || tex_path === state.current_main) {
+export async function select_document(state, document_path, callbacks) {
+  if (!document_path || document_path === state.current_document) {
     await callbacks.fetch_snapshot();
     return;
   }
   try {
     set_status(state, "switching document…", "building");
-    set_status_detail(state, tex_path);
-    const response = await fetch(app_url(state, `/api/main?tex=${encodeURIComponent(tex_path)}`), {
+    set_status_detail(state, document_path);
+    const response = await fetch(app_url(state, `/api/main?document=${encodeURIComponent(document_path)}`), {
       method: "POST",
       credentials: "include",
       cache: "no-store"
@@ -65,9 +67,9 @@ export async function select_tex_document(state, tex_path, callbacks) {
       throw new Error("switch failed");
     }
     const data = await response.json();
-    state.current_main = data.tex_main || tex_path;
+    state.current_document = data.main_document || document_path;
     state.last_pdf_mtime = null;
-    render_tex_list(state, callbacks.select_tex_document);
+    render_document_list(state, callbacks.select_document);
     callbacks.reload_pdf(Date.now());
     await callbacks.fetch_snapshot();
   } catch (_) {

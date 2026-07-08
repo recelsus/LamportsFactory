@@ -9,6 +9,7 @@
 #include <thread>
 
 #include "app/build/build_log_buffer.hpp"
+#include "app/compiler/compiler_backend.hpp"
 #include "app/config/config.hpp"
 #include "app/events/event_bus.hpp"
 
@@ -23,12 +24,13 @@ struct build_snapshot {
   std::int64_t last_duration_ms;
   std::string last_error;
   std::int64_t updated_at;
-  std::string current_main;
+  std::string current_document;
 };
 
 class build_manager {
 public:
-  build_manager(const app_config& config, event_bus& bus,
+  build_manager(const app_config& config, const compiler_backend& compiler,
+                event_bus& bus,
                 build_log_buffer& log_buffer);
   ~build_manager();
 
@@ -37,14 +39,15 @@ public:
   void enqueue_build(const std::string& reason);
   build_snapshot snapshot() const;
   bool ready() const;
-  bool set_main_target(const std::string& tex_main);
-  std::string current_main() const;
+  bool set_main_document(const std::string& main_document);
+  std::string current_document() const;
 
 private:
   void worker_loop();
   void run_build(const std::string& reason);
   int queued_count() const;
   const app_config& config;
+  const compiler_backend& compiler;
   event_bus& bus;
   build_log_buffer& log_buffer;
   mutable std::mutex mutex;
@@ -63,7 +66,7 @@ private:
   std::string last_error_message;
   std::int64_t last_update_ms = 0;
   int queued_requests = 0;
-  std::string current_main_tex;
+  std::string current_document_path;
 };
 
 }  // namespace lf

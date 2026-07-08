@@ -2,8 +2,8 @@ import { app_url, build_pdf_url } from "./url.js";
 import { set_status, set_status_detail } from "./status.js";
 
 function pdf_download_filename(state) {
-  const main = state.current_main || "preview.tex";
-  const name = main.split("/").filter(Boolean).pop() || "preview.tex";
+  const main = state.current_document || "preview";
+  const name = main.split("/").filter(Boolean).pop() || "preview";
   return name.replace(/\.[^.]+$/, "") + ".pdf";
 }
 

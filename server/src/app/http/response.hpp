@@ -6,6 +6,7 @@
 #include <httplib.h>
 
 #include "app/build/build_manager.hpp"
+#include "app/compiler/compiler_backend.hpp"
 #include "app/config/config.hpp"
 
 namespace lf {
@@ -26,7 +27,9 @@ std::string load_file_contents(const std::filesystem::path& path);
 
 std::string pdf_content_disposition_for(const std::filesystem::path& pdf_path);
 
-void write_pdf_response(const app_config& config, const build_manager& manager,
+void write_pdf_response(const app_config& config,
+                        const compiler_backend& compiler,
+                        const build_manager& manager,
                         const httplib::Request& request,
                         httplib::Response& response);
 

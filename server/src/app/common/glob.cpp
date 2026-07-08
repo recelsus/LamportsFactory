@@ -67,9 +67,6 @@ std::vector<std::string> split_multi_glob(const std::string& text) {
   if (!current.empty()) {
     result.push_back(current);
   }
-  if (result.empty()) {
-    result.push_back("**/*.tex");
-  }
   return result;
 }
 

@@ -7,7 +7,6 @@
 #include <sstream>
 
 #include "app/common/utils.hpp"
-#include "app/workspace/workspace_documents.hpp"
 
 namespace lf {
 namespace {
@@ -99,13 +98,22 @@ std::string pdf_content_disposition_for(const std::filesystem::path& pdf_path) {
          "\"; filename*=UTF-8''" + percent_encode_filename(filename);
 }
 
-void write_pdf_response(const app_config& config, const build_manager& manager,
+void write_pdf_response(const app_config& config,
+                        const compiler_backend& compiler,
+                        const build_manager& manager,
                         const httplib::Request& request,
                         httplib::Response& response) {
-  const std::string requested =
-      request.has_param("tex") ? request.get_param_value("tex") : "";
-  const auto pdf_path =
-      requested_pdf_path(config, manager.current_main(), requested);
+  std::string requested;
+  if (request.has_param("document")) {
+    requested = request.get_param_value("document");
+  }
+  std::string main_document = manager.current_document().empty()
+                                  ? config.main_document
+                                  : manager.current_document();
+  if (!requested.empty() && requested != main_document) {
+    main_document = requested;
+  }
+  const auto pdf_path = compiler.output_pdf_path(config, main_document);
   std::error_code ec;
   if (!std::filesystem::exists(pdf_path, ec)) {
     set_text_response(config, response, 404, "pdf not found");

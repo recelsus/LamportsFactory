@@ -68,6 +68,17 @@ std::string build_dir_name_from_out_dir(const std::string& out_dir) {
   return name.string();
 }
 
+std::string normalize_extension(const std::string& raw) {
+  std::string extension = lf::trim_copy(raw);
+  if (extension.empty()) {
+    return ".tex";
+  }
+  if (extension.front() != '.') {
+    extension = "." + extension;
+  }
+  return extension;
+}
+
 bool parse_enable_disable(const std::string& value, bool fallback) {
   const std::string lower = lf::to_lower_copy(lf::trim_copy(value));
   if (lower == "enable" || lower == "enabled" || lower == "1" ||
@@ -112,37 +123,23 @@ log_level_setting parse_log_level(const std::string& value) {
 
 app_config load_app_config() {
   app_config config{};
-  config.tex_dir = get_env_string("TEX_DIR", "/app/workspace");
+  config.workspace_dir = get_env_string("WORKSPACE_DIR", "/app/workspace");
   config.out_dir = get_env_string("OUT_DIR", "/app/workspace/build");
   config.build_dir_name = get_env_string(
       "BUILD_DIR_NAME", build_dir_name_from_out_dir(config.out_dir));
-  config.tex_main = get_env_string("TEX_MAIN", "tex/main.tex");
-  config.watch_globs_raw =
-      split_multi_glob(get_env_string("WATCH_GLOB", "**/*.tex"));
+  config.main_document = get_env_string("MAIN_DOCUMENT", "tex/main.tex");
+  config.document_extension =
+      normalize_extension(get_env_string("DOCUMENT_EXTENSION", ".tex"));
+  config.watch_globs_raw = split_multi_glob(
+      get_env_string("WATCH_GLOB", "**/*" + config.document_extension));
   config.watch_globs = compile_globs(config.watch_globs_raw);
   config.watch_ignore_raw =
       split_semicolon(get_env_string("WATCH_IGNORE_GLOB",
                                      "build/**;**/*.aux;**/*.log;**/*.synctex.gz"));
   config.watch_ignore = compile_globs(config.watch_ignore_raw);
   config.initial_build = get_env_bool("INITIAL_BUILD", true);
-  config.build_tool = to_lower_copy(get_env_string("BUILD_TOOL", "latexmk"));
-  config.latex_engine =
-      to_lower_copy(get_env_string("LATEX_ENGINE", "lualatex"));
-  std::string default_latexmk_opts = "-lualatex -interaction=nonstopmode";
-  if (config.latex_engine == "pdflatex" || config.latex_engine == "pdf") {
-    default_latexmk_opts = "-pdf -interaction=nonstopmode";
-  } else if (config.latex_engine == "platex") {
-    default_latexmk_opts = "-pdfdvi -interaction=nonstopmode";
-  } else if (config.latex_engine == "uplatex") {
-    default_latexmk_opts = "-pdfdvi -interaction=nonstopmode";
-  } else if (config.latex_engine == "xelatex") {
-    default_latexmk_opts = "-xelatex -interaction=nonstopmode";
-  } else if (config.latex_engine == "lualatex") {
-    default_latexmk_opts = "-lualatex -interaction=nonstopmode";
-  }
-  config.latexmk_opts =
-      split_whitespace(get_env_string("LATEXMK_OPTS", default_latexmk_opts));
-  config.tectonic_opts = split_whitespace(get_env_string("TECTONIC_OPTS", ""));
+  config.compiler_backend =
+      to_lower_copy(get_env_string("COMPILER_BACKEND", "latex"));
   config.build_timeout_sec = get_env_int("BUILD_TIMEOUT_SEC", 120);
   config.max_concurrent_builds = get_env_int("MAX_CONCURRENT_BUILDS", 1);
   config.file_change_batch_window_ms =

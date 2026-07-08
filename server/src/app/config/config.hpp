@@ -11,19 +11,17 @@ enum class reload_mode { sse, ws, poll };
 enum class log_level_setting { debug, info, warn, error };
 
 struct app_config {
-  std::string tex_dir;
+  std::string workspace_dir;
   std::string out_dir;
   std::string build_dir_name;
-  std::string tex_main;
+  std::string main_document;
+  std::string document_extension;
   std::vector<std::string> watch_globs_raw;
   std::vector<std::regex> watch_globs;
   std::vector<std::string> watch_ignore_raw;
   std::vector<std::regex> watch_ignore;
   bool initial_build;
-  std::string build_tool;
-  std::string latex_engine;
-  std::vector<std::string> latexmk_opts;
-  std::vector<std::string> tectonic_opts;
+  std::string compiler_backend;
   int build_timeout_sec;
   int max_concurrent_builds;
   int file_change_batch_window_ms;

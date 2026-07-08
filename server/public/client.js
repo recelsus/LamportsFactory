@@ -2,7 +2,7 @@ import { app_state } from "./app/state.js";
 import { set_status, set_status_detail } from "./app/status.js";
 import { stored_layout_mode, setup_layout_toggle, apply_layout } from "./app/layout.js";
 import { setup_pdf_viewer, reload_pdf as reload_pdf_viewer } from "./app/pdf_preview.js";
-import { load_config, load_tex_files, select_tex_document as select_document } from "./app/api.js";
+import { load_config, load_documents, select_document as select_document } from "./app/api.js";
 import { fetch_snapshot as fetch_state_snapshot, setup_channel } from "./app/reload_channel.js";
 
 function bind_elements() {
@@ -17,15 +17,15 @@ function bind_elements() {
   app_state.main_area = document.querySelector(".main-area");
   app_state.layout_toggle = document.getElementById("layout-toggle");
   app_state.refresh_button = document.getElementById("refresh-button");
-  app_state.tex_list = document.getElementById("tex-list");
+  app_state.document_list = document.getElementById("document-list");
 }
 
 function create_callbacks() {
   const callbacks = {};
   callbacks.reload_pdf = (token) => reload_pdf_viewer(app_state, token);
   callbacks.fetch_snapshot = () => fetch_state_snapshot(app_state, callbacks);
-  callbacks.load_tex_files = () => load_tex_files(app_state, callbacks.select_tex_document);
-  callbacks.select_tex_document = (tex_path) => select_document(app_state, tex_path, callbacks);
+  callbacks.load_documents = () => load_documents(app_state, callbacks.select_document);
+  callbacks.select_document = (document_path) => select_document(app_state, document_path, callbacks);
   return callbacks;
 }
 
@@ -34,7 +34,7 @@ function setup_refresh_button(callbacks) {
     return;
   }
   app_state.refresh_button.addEventListener("click", async () => {
-    await callbacks.load_tex_files();
+    await callbacks.load_documents();
     await callbacks.fetch_snapshot();
   });
 }
@@ -50,7 +50,7 @@ async function initialize() {
   setup_refresh_button(callbacks);
   await setup_pdf_viewer(app_state);
   apply_layout(app_state);
-  await callbacks.load_tex_files();
+  await callbacks.load_documents();
   await callbacks.fetch_snapshot();
   setup_channel(app_state, callbacks);
   if (app_state.sync_timer) {

@@ -28,6 +28,8 @@ APP_INTERNAL_ADDR="${APP_INTERNAL_ADDR:-127.0.0.1}"
 APP_INTERNAL_PORT="${APP_INTERNAL_PORT:-18080}"
 TTYD_INTERNAL_ADDR="${TTYD_INTERNAL_ADDR:-127.0.0.1}"
 TTYD_INTERNAL_PORT="${TTYD_INTERNAL_PORT:-17681}"
+TTYD_TMUX_SESSION="${TTYD_TMUX_SESSION:-lamportsfactory-main}"
+TTYD_FONT_FAMILY="${TTYD_FONT_FAMILY:-JetBrainsMono Nerd Font, Symbols Nerd Font Mono, monospace}"
 REVERSE_PROXY_PORT="${REVERSE_PROXY_PORT:-8080}"
 TTYD_ENABLED="${TTYD_ENABLED:-enable}"
 WORKSPACE_DIR="${WORKSPACE_DIR:-/app/workspace}"
@@ -38,6 +40,10 @@ export SERVER_ADDR="$APP_INTERNAL_ADDR"
 export SERVER_PORT="$APP_INTERNAL_PORT"
 export TEXMFHOME
 export OSFONTDIR
+export TERM="${TERM:-xterm-256color}"
+export COLORTERM="${COLORTERM:-truecolor}"
+export LANG="${LANG:-C.UTF-8}"
+export LC_ALL="${LC_ALL:-C.UTF-8}"
 export XDG_CONFIG_HOME="${NVIM_CONFIG_ROOT:-/app/nvim/config-root}"
 export XDG_DATA_HOME="${NVIM_DATA_HOME:-/app/nvim/data}"
 export XDG_CACHE_HOME="${NVIM_CACHE_HOME:-/app/nvim/cache}"
@@ -117,11 +123,16 @@ children="$children $!"
 if is_enabled "$TTYD_ENABLED"; then
 cat > /tmp/lamportsfactory-ttyd-shell.sh <<EOF
 #!/usr/bin/env sh
+set -eu
 cd "$WORKSPACE_DIR" || exit 1
-bash
+export TERM="\${TERM:-xterm-256color}"
+export COLORTERM="\${COLORTERM:-truecolor}"
+export LANG="\${LANG:-C.UTF-8}"
+export LC_ALL="\${LC_ALL:-C.UTF-8}"
+exec tmux -f /etc/lamportsfactory-tmux.conf new-session -A -s "$TTYD_TMUX_SESSION" -c "$WORKSPACE_DIR" "bash -l"
 EOF
   chmod 0755 /tmp/lamportsfactory-ttyd-shell.sh
-  ttyd -i "$TTYD_INTERNAL_ADDR" -p "$TTYD_INTERNAL_PORT" -b "$terminal_path" -W -w "$WORKSPACE_DIR" /tmp/lamportsfactory-ttyd-shell.sh &
+  ttyd -i "$TTYD_INTERNAL_ADDR" -p "$TTYD_INTERNAL_PORT" -b "$terminal_path" -W -w "$WORKSPACE_DIR" -t "fontFamily=$TTYD_FONT_FAMILY" /tmp/lamportsfactory-ttyd-shell.sh &
   children="$children $!"
 fi
 

@@ -48,19 +48,20 @@ bool path_is_within(const std::filesystem::path& parent,
   return parent_it == parent_canonical.end();
 }
 
-std::filesystem::path pdf_path_for(const std::string& tex_dir,
-                                   const std::string& build_dir_name,
-                                   const std::string& tex_main,
-                                   const std::string& fallback_pdf) {
-  if (tex_main.empty()) {
+std::filesystem::path output_pdf_path_for(const std::string& workspace_dir,
+                                          const std::string& build_dir_name,
+                                          const std::string& main_document,
+                                          const std::string& fallback_pdf) {
+  if (main_document.empty()) {
     if (!fallback_pdf.empty()) {
       return std::filesystem::path(fallback_pdf);
     }
-    std::filesystem::path base(tex_dir);
+    std::filesystem::path base(workspace_dir);
     return base / "main.pdf";
   }
-  std::filesystem::path base = build_dir_for(tex_dir, build_dir_name, tex_main);
-  std::filesystem::path main_path(tex_main);
+  std::filesystem::path base =
+      build_dir_for_document(workspace_dir, build_dir_name, main_document);
+  std::filesystem::path main_path(main_document);
   std::string stem = main_path.stem().string();
   if (stem.empty()) {
     if (!fallback_pdf.empty()) {
@@ -71,19 +72,20 @@ std::filesystem::path pdf_path_for(const std::string& tex_dir,
   return base / (stem + ".pdf");
 }
 
-std::filesystem::path build_dir_for(const std::string& tex_dir,
-                                    const std::string& build_dir_name,
-                                    const std::string& tex_main) {
-  std::filesystem::path base(tex_dir);
+std::filesystem::path build_dir_for_document(
+    const std::string& workspace_dir,
+    const std::string& build_dir_name,
+    const std::string& main_document) {
+  std::filesystem::path base(workspace_dir);
   if (base.empty()) {
     base = std::filesystem::current_path();
   }
   const std::filesystem::path normalized_build_dir_name =
       normalize_build_dir_name(build_dir_name);
-  if (tex_main.empty()) {
+  if (main_document.empty()) {
     return base / normalized_build_dir_name;
   }
-  const std::filesystem::path main_path(tex_main);
+  const std::filesystem::path main_path(main_document);
   const std::filesystem::path parent = main_path.parent_path();
   if (parent.empty()) {
     return base / normalized_build_dir_name;
@@ -91,11 +93,11 @@ std::filesystem::path build_dir_for(const std::string& tex_dir,
   return base / parent.lexically_normal() / normalized_build_dir_name;
 }
 
-bool is_build_output_path(const std::string& tex_dir,
+bool is_build_output_path(const std::string& workspace_dir,
                           const std::string& build_dir_name,
                           const std::filesystem::path& path) {
   std::error_code ec;
-  const auto relative = std::filesystem::relative(path, tex_dir, ec);
+  const auto relative = std::filesystem::relative(path, workspace_dir, ec);
   if (ec) {
     return false;
   }

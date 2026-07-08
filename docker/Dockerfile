@@ -32,17 +32,26 @@ ARG TTYD_VERSION=1.7.7
 ENV DEBIAN_FRONTEND=noninteractive \
     APP_HOME=/app \
     HOME=/app \
-    TEX_DIR=/app/workspace \
+    WORKSPACE_DIR=/app/workspace \
     BUILD_DIR_NAME=build \
-    TEX_MAIN=sample/main.tex \
+    MAIN_DOCUMENT=sample/main.tex \
+    DOCUMENT_EXTENSION=.tex \
+    COMPILER_BACKEND=latex \
+    LATEX_BUILD_TOOL=latexmk \
     LATEX_ENGINE=lualatex \
     BASE_URL=/ \
     APP_INTERNAL_ADDR=127.0.0.1 \
     APP_INTERNAL_PORT=18080 \
     REVERSE_PROXY_PORT=8080 \
     TTYD_ENABLED=enable \
+    TTYD_TMUX_SESSION=lamportsfactory-main \
+    TTYD_FONT_FAMILY="JetBrainsMono Nerd Font, Symbols Nerd Font Mono, monospace" \
     TTYD_INTERNAL_ADDR=127.0.0.1 \
     TTYD_INTERNAL_PORT=17681 \
+    TERM=xterm-256color \
+    COLORTERM=truecolor \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
     NVIM_CONFIG_ROOT=/app/nvim/config-root \
     NVIM_DATA_HOME=/app/nvim/data \
     NVIM_CACHE_HOME=/app/nvim/cache \
@@ -67,6 +76,7 @@ RUN apt-get update \
        latex-cjk-all \
        latexmk \
        make \
+       ncurses-term \
        nginx-light \
        nodejs \
        npm \
@@ -82,6 +92,7 @@ RUN apt-get update \
        texlive-luatex \
        texlive-xetex \
        tini \
+       tmux \
        unzip \
        xz-utils \
     && curl -fsSL "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux-x86_64.tar.gz" \
@@ -90,6 +101,7 @@ RUN apt-get update \
        -o /usr/local/bin/ttyd \
     && mkdir -p /opt/nvim \
     && tar -xzf /tmp/nvim.tar.gz -C /opt/nvim --strip-components=1 \
+    && ln -sf /opt/nvim/bin/nvim /usr/local/bin/nvim \
     && ln -sf /opt/nvim/bin/nvim /usr/local/bin/vi \
     && ln -sf /opt/nvim/bin/nvim /usr/local/bin/vim \
     && chmod 0755 /usr/local/bin/ttyd \
@@ -123,6 +135,7 @@ COPY --from=builder /tmp/out/public/ "${APP_HOME}/public/"
 COPY docker/entrypoint.sh /usr/local/bin/lamportsfactory-entrypoint
 COPY docker/nvim-latex-bootstrap.sh /usr/local/bin/nvim-latex-bootstrap
 COPY docker/build-server-in-container.sh /usr/local/bin/build-server-in-container
+COPY docker/tmux.conf /etc/lamportsfactory-tmux.conf
 
 RUN chmod 0755 /usr/local/bin/lamportsfactory-entrypoint /usr/local/bin/nvim-latex-bootstrap /usr/local/bin/build-server-in-container \
     && chown -R "${USER_ID}":"${GROUP_ID}" "${APP_HOME}" /tmp/nginx-client-body /tmp/nginx-proxy /tmp/nginx-fastcgi /tmp/nginx-uwsgi /tmp/nginx-scgi

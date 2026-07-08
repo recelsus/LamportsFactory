@@ -5,6 +5,7 @@
 
 #include "app/build/build_log_buffer.hpp"
 #include "app/build/build_manager.hpp"
+#include "app/compiler/latex_backend.hpp"
 #include "app/config/config.hpp"
 #include "app/events/event_bus.hpp"
 #include "app/watch/file_watcher.hpp"
@@ -39,13 +40,19 @@ int main(int argc, char** argv) {
   }
 
   const lf::app_config config = lf::load_app_config();
-  std::filesystem::create_directories(config.tex_dir);
+  std::filesystem::create_directories(config.workspace_dir);
 
   lf::set_http_log_level(config.log_level_choice);
 
   lf::build_log_buffer log_buffer(config.build_log_buffer_lines);
+  if (config.compiler_backend != "latex") {
+    std::cerr << "unsupported compiler backend: " << config.compiler_backend
+              << '\n';
+    return 2;
+  }
+  lf::latex_backend compiler(lf::load_latex_backend_config());
   lf::event_bus bus;
-  lf::build_manager manager(config, bus, log_buffer);
+  lf::build_manager manager(config, compiler, bus, log_buffer);
   manager.start();
   if (config.initial_build) {
     manager.enqueue_build("initial");
@@ -56,7 +63,7 @@ int main(int argc, char** argv) {
   });
   watcher.start();
 
-  const lf::server_handle server(config, bus, manager, log_buffer);
+  const lf::server_handle server(config, compiler, bus, manager, log_buffer);
   std::cout << "LamportsFactory server listening on " << config.server_addr << ':'
             << config.server_port << '\n';
   server.run();

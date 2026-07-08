@@ -10,6 +10,7 @@
 
 #include "app/build/build_events.hpp"
 #include "app/build/build_log_buffer.hpp"
+#include "app/compiler/latex_backend.hpp"
 #include "app/common/utils.hpp"
 #include "app/config/config.hpp"
 #include "app/events/event_bus.hpp"
@@ -76,12 +77,13 @@ void write_file(const std::filesystem::path& path, const std::string& body) {
   out << body;
 }
 
-lf::app_config minimal_config(const std::filesystem::path& tex_dir) {
+lf::app_config minimal_config(const std::filesystem::path& workspace_dir) {
   lf::app_config config{};
-  config.tex_dir = tex_dir.string();
-  config.out_dir = (tex_dir / "build").string();
+  config.workspace_dir = workspace_dir.string();
+  config.out_dir = (workspace_dir / "build").string();
   config.build_dir_name = "build";
-  config.tex_main = "tex/main.tex";
+  config.main_document = "tex/main.tex";
+  config.document_extension = ".tex";
   config.pdf_path = "";
   config.reload_choice = lf::reload_mode::sse;
   config.layout_mode = "preview";
@@ -124,20 +126,20 @@ void test_globs_and_paths() {
   require(!lf::path_is_within(temp / "a", temp / "b" / "main.tex"),
           "path_is_within sibling");
 
-  require_eq(lf::pdf_path_for(temp.string(), "build",
-                              "tex/main.tex", "")
+  require_eq(lf::output_pdf_path_for(temp.string(), "build",
+                                     "tex/main.tex", "")
                  .string(),
              (temp / "tex" / "build" / "main.pdf").string(),
-             "pdf_path_for sibling build dir");
-  require_eq(lf::build_dir_for(temp.string(), "build",
-                               "tex/main.tex")
+             "output_pdf_path_for sibling build dir");
+  require_eq(lf::build_dir_for_document(temp.string(), "build",
+                                        "tex/main.tex")
                  .string(),
              (temp / "tex" / "build").string(),
-             "build_dir_for sibling build dir");
-  require_eq(lf::build_dir_for(temp.string(), "build",
-                               "main.tex")
+             "build_dir_for_document sibling build dir");
+  require_eq(lf::build_dir_for_document(temp.string(), "build",
+                                        "main.tex")
                  .string(),
-             (temp / "build").string(), "build_dir_for root tex");
+             (temp / "build").string(), "build_dir_for_document root");
   require(lf::is_build_output_path(temp.string(), "build",
                                    temp / "tex" / "build" / "main.aux"),
           "is_build_output_path nested");
@@ -145,41 +147,67 @@ void test_globs_and_paths() {
 }
 
 void test_config_env() {
-  env_guard guard({"BASE_URL", "TTYD_ENABLED", "LAYOUT_MODE", "LATEX_ENGINE",
-                   "LATEXMK_OPTS", "STATIC_DIR", "TEX_DIR", "OUT_DIR",
-                   "BUILD_DIR_NAME", "TEX_MAIN"});
+  env_guard guard({"BASE_URL", "TTYD_ENABLED", "LAYOUT_MODE", "STATIC_DIR",
+                   "WORKSPACE_DIR", "OUT_DIR", "BUILD_DIR_NAME",
+                   "MAIN_DOCUMENT", "DOCUMENT_EXTENSION",
+                   "COMPILER_BACKEND"});
   setenv("BASE_URL", "preview/", 1);
   setenv("TTYD_ENABLED", "disable", 1);
   setenv("LAYOUT_MODE", "split", 1);
-  setenv("LATEX_ENGINE", "platex", 1);
-  unsetenv("LATEXMK_OPTS");
   setenv("STATIC_DIR", "/tmp", 1);
+  setenv("WORKSPACE_DIR", "/tmp/workspace", 1);
+  setenv("MAIN_DOCUMENT", "sample/main.tex", 1);
   setenv("OUT_DIR", "/app/workspace/legacy-build", 1);
   unsetenv("BUILD_DIR_NAME");
+  setenv("DOCUMENT_EXTENSION", "tex", 1);
+  setenv("COMPILER_BACKEND", "latex", 1);
 
   const lf::app_config config = lf::load_app_config();
   require_eq(config.base_url, std::string("/preview"), "base url normalize");
+  require_eq(config.workspace_dir, std::string("/tmp/workspace"),
+             "workspace dir");
+  require_eq(config.main_document, std::string("sample/main.tex"),
+             "main document");
   require_eq(config.layout_mode, std::string("preview"),
              "split falls back when ttyd disabled");
   require(!config.ttyd_enabled, "ttyd disabled");
   require_eq(config.ttyd_url, std::string("/preview/terminal/"),
              "default ttyd url joins base url");
-  require_eq(config.latexmk_opts[0], std::string("-pdfdvi"),
-             "platex default latexmk option");
   require_eq(config.build_dir_name, std::string("legacy-build"),
              "build dir name falls back to OUT_DIR filename");
+  require_eq(config.document_extension, std::string(".tex"),
+             "document extension normalizes dot");
+  require_eq(config.compiler_backend, std::string("latex"),
+             "compiler backend");
 
   setenv("TTYD_ENABLED", "enable", 1);
   setenv("LAYOUT_MODE", "split", 1);
-  setenv("LATEXMK_OPTS", "-xelatex -halt-on-error", 1);
   setenv("BUILD_DIR_NAME", "build", 1);
   const lf::app_config enabled = lf::load_app_config();
   require(enabled.ttyd_enabled, "ttyd enabled");
   require_eq(enabled.layout_mode, std::string("split"), "split enabled");
-  require_eq(enabled.latexmk_opts[0], std::string("-xelatex"),
-             "latexmk override");
   require_eq(enabled.build_dir_name, std::string("build"),
              "build dir name explicit");
+}
+
+void test_latex_backend_config() {
+  env_guard guard({"LATEX_BUILD_TOOL", "LATEX_ENGINE", "LATEXMK_OPTS",
+                   "TECTONIC_OPTS"});
+  setenv("LATEX_BUILD_TOOL", "latexmk", 1);
+  setenv("LATEX_ENGINE", "platex", 1);
+  unsetenv("LATEXMK_OPTS");
+  unsetenv("TECTONIC_OPTS");
+
+  const lf::latex_backend_config config = lf::load_latex_backend_config();
+  require_eq(config.build_tool, std::string("latexmk"),
+             "latex build tool");
+  require_eq(config.latexmk_opts[0], std::string("-pdfdvi"),
+             "platex default latexmk option");
+
+  setenv("LATEXMK_OPTS", "-xelatex -halt-on-error", 1);
+  const lf::latex_backend_config overridden = lf::load_latex_backend_config();
+  require_eq(overridden.latexmk_opts[0], std::string("-xelatex"),
+             "latexmk override");
 }
 
 void test_workspace_documents() {
@@ -191,23 +219,21 @@ void test_workspace_documents() {
   write_file(temp / "notes.txt", "ignored");
 
   lf::app_config config = minimal_config(temp);
-  const auto files = lf::list_tex_documents(config);
-  require_eq(files.size(), std::size_t{3}, "list tex files excludes build");
-  require_eq(files[0], std::string("other/z.tex"), "list tex sorted 0");
-  require_eq(files[1], std::string("tex/chapter.tex"), "list tex sorted 1");
-  require_eq(files[2], std::string("tex/main.tex"), "list tex sorted 2");
+  const auto files = lf::list_documents(config);
+  require_eq(files.size(), std::size_t{3}, "list documents excludes build");
+  require_eq(files[0], std::string("other/z.tex"), "list documents sorted 0");
+  require_eq(files[1], std::string("tex/chapter.tex"),
+             "list documents sorted 1");
+  require_eq(files[2], std::string("tex/main.tex"),
+             "list documents sorted 2");
 
-  require_eq(lf::resolve_tex_document(config, "tex/main.tex"),
-             std::string("tex/main.tex"), "resolve valid tex");
-  require_eq(lf::resolve_tex_document(config, "../outside.tex"),
-             std::string(""), "reject outside tex");
-  require_eq(lf::resolve_tex_document(config, "notes.txt"), std::string(""),
-             "reject non-tex");
+  require_eq(lf::resolve_document(config, "tex/main.tex"),
+             std::string("tex/main.tex"), "resolve valid document");
+  require_eq(lf::resolve_document(config, "../outside.tex"),
+             std::string(""), "reject outside document");
+  require_eq(lf::resolve_document(config, "notes.txt"), std::string(""),
+             "reject non-document extension");
 
-  require_eq(lf::requested_pdf_path(config, "tex/main.tex", "other/z.tex")
-                 .string(),
-             (temp / "other" / "build" / "z.pdf").string(),
-             "requested pdf path override");
   std::filesystem::remove_all(temp);
 }
 
@@ -237,18 +263,18 @@ void test_build_log_buffer() {
 void test_build_events() {
   require_eq(lf::build_start_payload("file\"change", 2, "tex/main.tex"),
              std::string("{\"reason\":\"file\\\"change\",\"queued\":2,"
-                         "\"tex_main\":\"tex/main.tex\"}"),
+                         "\"main_document\":\"tex/main.tex\"}"),
              "build_start_payload");
   require_eq(lf::pdf_updated_payload(123, "tex/main.tex"),
-             std::string("{\"pdf_mtime\":123,\"tex_main\":\"tex/main.tex\"}"),
+             std::string("{\"pdf_mtime\":123,\"main_document\":\"tex/main.tex\"}"),
              "pdf_updated_payload");
   require_eq(lf::build_ok_payload(123, 45, "tex/main.tex"),
              std::string("{\"pdf_mtime\":123,\"duration_ms\":45,"
-                         "\"tex_main\":\"tex/main.tex\"}"),
+                         "\"main_document\":\"tex/main.tex\"}"),
              "build_ok_payload");
   require_eq(lf::build_fail_payload("bad\nbuild", "tail", 45, "tex/main.tex"),
              std::string("{\"message\":\"bad\\nbuild\",\"tail_log\":\"tail\","
-                         "\"duration_ms\":45,\"tex_main\":\"tex/main.tex\"}"),
+                         "\"duration_ms\":45,\"main_document\":\"tex/main.tex\"}"),
              "build_fail_payload");
 }
 
@@ -270,6 +296,7 @@ int main() {
       {"common_utils", test_common_utils},
       {"globs_and_paths", test_globs_and_paths},
       {"config_env", test_config_env},
+      {"latex_backend_config", test_latex_backend_config},
       {"workspace_documents", test_workspace_documents},
       {"pdf_response_headers", test_pdf_response_headers},
       {"build_log_buffer", test_build_log_buffer},

@@ -51,7 +51,7 @@ void file_watcher::init_inotify() {
   if (inotify_fd < 0) {
     return;
   }
-  register_recursive(config.tex_dir);
+  register_recursive(config.workspace_dir);
 }
 
 void file_watcher::register_recursive(const std::filesystem::path& root) {
@@ -70,7 +70,8 @@ void file_watcher::register_recursive(const std::filesystem::path& root) {
       continue;
     }
     const auto path = entry.path();
-    if (is_build_output_path(config.tex_dir, config.build_dir_name, path)) {
+    if (is_build_output_path(config.workspace_dir, config.build_dir_name,
+                             path)) {
       continue;
     }
     add_watch(path);
@@ -105,12 +106,13 @@ bool file_watcher::matches_glob(const std::vector<std::regex>& patterns,
 
 bool file_watcher::should_track_file(
     const std::filesystem::path& file_path) const {
-  if (is_build_output_path(config.tex_dir, config.build_dir_name, file_path)) {
+  if (is_build_output_path(config.workspace_dir, config.build_dir_name,
+                           file_path)) {
     return false;
   }
   std::error_code ec;
   std::filesystem::path relative =
-      std::filesystem::relative(file_path, config.tex_dir, ec);
+      std::filesystem::relative(file_path, config.workspace_dir, ec);
   if (ec) {
     relative = file_path;
   }
@@ -129,7 +131,7 @@ void file_watcher::handle_event(const struct inotify_event& event,
   if ((event.mask & IN_ISDIR) != 0U) {
     if ((event.mask & IN_CREATE) != 0U || (event.mask & IN_MOVED_TO) != 0U) {
       const std::filesystem::path new_path = parent / event.name;
-      if (!is_build_output_path(config.tex_dir, config.build_dir_name,
+      if (!is_build_output_path(config.workspace_dir, config.build_dir_name,
                                 new_path)) {
         add_watch(new_path);
       }

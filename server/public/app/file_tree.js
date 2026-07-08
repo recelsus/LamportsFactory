@@ -1,4 +1,4 @@
-export function normalize_tex_file_list(files) {
+export function normalize_document_file_list(files) {
   return Array.isArray(files)
     ? files.map((item) => (item && item.path ? item.path : item)).filter(Boolean)
     : [];
@@ -11,33 +11,33 @@ function same_string_list(left, right) {
   return left.every((item, index) => item === right[index]);
 }
 
-export function update_tex_files(state, files) {
-  const next_files = normalize_tex_file_list(files);
-  if (next_files.length === 0 && state.tex_files.length > 0) {
+export function update_documents(state, files) {
+  const next_files = normalize_document_file_list(files);
+  if (next_files.length === 0 && state.documents.length > 0) {
     return false;
   }
-  if (same_string_list(state.tex_files, next_files)) {
+  if (same_string_list(state.documents, next_files)) {
     return false;
   }
-  state.tex_files = next_files;
-  render_tex_list(state);
+  state.documents = next_files;
+  render_document_list(state);
   return true;
 }
 
-export function render_tex_list(state, select_tex_document) {
-  if (!state.tex_list) {
+export function render_document_list(state, select_document) {
+  if (!state.document_list) {
     return;
   }
-  state.tex_list.innerHTML = "";
-  if (state.tex_files.length === 0) {
+  state.document_list.innerHTML = "";
+  if (state.documents.length === 0) {
     const li = document.createElement("li");
-    li.className = "tex-item";
-    li.textContent = "No .tex files found";
-    state.tex_list.appendChild(li);
+    li.className = "document-item";
+    li.textContent = "No documents found";
+    state.document_list.appendChild(li);
     return;
   }
-  const tree = build_file_tree(state.tex_files);
-  render_tree_nodes(state, state.tex_list, tree.children, select_tex_document);
+  const tree = build_file_tree(state.documents);
+  render_tree_nodes(state, state.document_list, tree.children, select_document);
 }
 
 function create_tree_node(name, path, type) {
@@ -83,12 +83,12 @@ function sort_tree(node) {
 
 function node_contains_current(state, node) {
   if (node.type === "file") {
-    return node.path === state.current_main;
+    return node.path === state.current_document;
   }
   return node.children.some((child) => node_contains_current(state, child));
 }
 
-function render_tree_nodes(state, parent, nodes, select_tex_document) {
+function render_tree_nodes(state, parent, nodes, select_document) {
   nodes.forEach((node) => {
     const li = document.createElement("li");
     li.className = node.type === "dir" ? "tree-dir" : "tree-file";
@@ -99,22 +99,22 @@ function render_tree_nodes(state, parent, nodes, select_tex_document) {
       summary.className = "tree-dir-summary";
       summary.textContent = node.name;
       const child_list = document.createElement("ul");
-      child_list.className = "tex-list nested";
-      render_tree_nodes(state, child_list, node.children, select_tex_document);
+      child_list.className = "document-list nested";
+      render_tree_nodes(state, child_list, node.children, select_document);
       details.appendChild(summary);
       details.appendChild(child_list);
       li.appendChild(details);
     } else {
       const button = document.createElement("button");
       button.type = "button";
-      button.className = "tex-item-button";
+      button.className = "document-item-button";
       button.textContent = node.name;
       button.title = node.path;
-      if (node.path === state.current_main) {
+      if (node.path === state.current_document) {
         button.classList.add("active");
       }
       button.addEventListener("click", () => {
-        select_tex_document(node.path);
+        select_document(node.path);
       });
       li.appendChild(button);
     }

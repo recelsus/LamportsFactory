@@ -75,7 +75,7 @@ body {
   color: #fff;
 }
 
-.tex-list-container {
+.document-list-container {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -85,7 +85,7 @@ body {
   background: #111318;
 }
 
-.tex-list {
+.document-list {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -94,12 +94,12 @@ body {
   gap: 4px;
 }
 
-.tex-list.nested {
+.document-list.nested {
   margin-top: 4px;
   padding-left: 12px;
 }
 
-.tex-item,
+.document-item,
 .tree-dir,
 .tree-file {
   list-style: none;
@@ -118,7 +118,7 @@ body {
   background: #232630;
 }
 
-.tex-item-button {
+.document-item-button {
   width: 100%;
   text-align: left;
   border: 1px solid #2c2f36;
@@ -131,11 +131,11 @@ body {
   transition: background 0.2s ease, border 0.2s ease;
 }
 
-.tex-item-button:hover {
+.document-item-button:hover {
   border-color: #3f7ae0;
 }
 
-.tex-item-button.active {
+.document-item-button.active {
   background: #2f80ed;
   border-color: #2f80ed;
   color: #fff;
@@ -273,7 +273,7 @@ body {
     gap: 12px;
   }
 
-  .tex-list-container {
+  .document-list-container {
     max-height: 200px;
   }
 

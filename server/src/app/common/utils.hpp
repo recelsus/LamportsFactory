@@ -26,14 +26,15 @@ std::int64_t now_epoch_millis();
 bool path_is_within(const std::filesystem::path& parent, const std::filesystem::path& child);
 std::vector<std::string> split_multi_glob(const std::string& text);
 std::vector<std::regex> compile_globs(const std::vector<std::string>& globs);
-std::filesystem::path pdf_path_for(const std::string& tex_dir,
-                                   const std::string& build_dir_name,
-                                   const std::string& tex_main,
-                                   const std::string& fallback_pdf);
-std::filesystem::path build_dir_for(const std::string& tex_dir,
-                                    const std::string& build_dir_name,
-                                    const std::string& tex_main);
-bool is_build_output_path(const std::string& tex_dir,
+std::filesystem::path output_pdf_path_for(const std::string& workspace_dir,
+                                          const std::string& build_dir_name,
+                                          const std::string& main_document,
+                                          const std::string& fallback_pdf);
+std::filesystem::path build_dir_for_document(
+    const std::string& workspace_dir,
+    const std::string& build_dir_name,
+    const std::string& main_document);
+bool is_build_output_path(const std::string& workspace_dir,
                           const std::string& build_dir_name,
                           const std::filesystem::path& path);
 

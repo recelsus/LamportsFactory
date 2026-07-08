@@ -1,6 +1,6 @@
 import { app_url } from "./url.js";
 import { set_status, set_status_detail, format_time_label } from "./status.js";
-import { update_tex_files, render_tex_list } from "./file_tree.js";
+import { update_documents, render_document_list } from "./file_tree.js";
 
 function parse_json(text) {
   try {
@@ -21,10 +21,10 @@ export async function fetch_snapshot(state, callbacks) {
     }
     const snapshot = await response.json();
     console.debug("snapshot", snapshot);
-    update_tex_files(state, snapshot.files);
-    if (snapshot.tex_main && snapshot.tex_main !== state.current_main) {
-      state.current_main = snapshot.tex_main;
-      render_tex_list(state, callbacks.select_tex_document);
+    update_documents(state, snapshot.files);
+    if (snapshot.main_document && snapshot.main_document !== state.current_document) {
+      state.current_document = snapshot.main_document;
+      render_document_list(state, callbacks.select_document);
     }
     if (typeof snapshot.pdf_mtime === "number" && snapshot.pdf_mtime !== state.last_pdf_mtime) {
       state.last_pdf_mtime = snapshot.pdf_mtime;
@@ -48,7 +48,7 @@ export async function fetch_snapshot(state, callbacks) {
     }
     set_status(state, "idle", "idle");
     set_status_detail(state, "waiting for changes");
-    await callbacks.load_tex_files();
+    await callbacks.load_documents();
   } catch (_) {
   }
 }
@@ -56,9 +56,9 @@ export async function fetch_snapshot(state, callbacks) {
 function dispatch_event(state, name, payload, callbacks) {
   switch (name) {
     case "build_start":
-      if (payload && payload.tex_main) {
-        state.current_main = payload.tex_main;
-        render_tex_list(state, callbacks.select_tex_document);
+      if (payload && payload.main_document) {
+        state.current_document = payload.main_document;
+        render_document_list(state, callbacks.select_document);
       }
       set_status(state, "building…", "building");
       set_status_detail(state, payload && payload.queued > 0
@@ -66,9 +66,9 @@ function dispatch_event(state, name, payload, callbacks) {
         : "running build");
       break;
     case "build_ok": {
-      if (payload && payload.tex_main) {
-        state.current_main = payload.tex_main;
-        render_tex_list(state, callbacks.select_tex_document);
+      if (payload && payload.main_document) {
+        state.current_document = payload.main_document;
+        render_document_list(state, callbacks.select_document);
       }
       const mtime = payload && typeof payload.pdf_mtime === "number"
         ? payload.pdf_mtime
@@ -80,9 +80,9 @@ function dispatch_event(state, name, payload, callbacks) {
       break;
     }
     case "build_fail":
-      if (payload && payload.tex_main) {
-        state.current_main = payload.tex_main;
-        render_tex_list(state, callbacks.select_tex_document);
+      if (payload && payload.main_document) {
+        state.current_document = payload.main_document;
+        render_document_list(state, callbacks.select_document);
       }
       set_status(state, "build failed", "error");
       set_status_detail(state, payload && payload.message ? payload.message : "build failed");
@@ -91,9 +91,9 @@ function dispatch_event(state, name, payload, callbacks) {
       if (!payload || typeof payload.pdf_mtime !== "number") {
         break;
       }
-      if (payload.tex_main) {
-        state.current_main = payload.tex_main;
-        render_tex_list(state, callbacks.select_tex_document);
+      if (payload.main_document) {
+        state.current_document = payload.main_document;
+        render_document_list(state, callbacks.select_document);
       }
       state.last_pdf_mtime = payload.pdf_mtime;
       callbacks.reload_pdf(payload.pdf_mtime);

@@ -9,9 +9,14 @@ services:
     environment:
       BASE_URL: /
       STATIC_DIR: /src/server/public
-      TEX_DIR: /app/workspace
+      WORKSPACE_DIR: /app/workspace
       BUILD_DIR_NAME: build
-      TEX_MAIN: sample/main.tex
+      MAIN_DOCUMENT: sample/main.tex
+      DOCUMENT_EXTENSION: .tex
+      # compiler backend examples: latex
+      COMPILER_BACKEND: latex
+      # latex build tool examples: latexmk | tectonic
+      LATEX_BUILD_TOOL: latexmk
       # latex engine examples: lualatex | xelatex | pdflatex | platex | uplatex
       LATEX_ENGINE: lualatex
       # Override latexmk options directly when needed.
@@ -26,6 +31,10 @@ services:
       NVIM_BOOTSTRAP_ON_INIT: enable
       # ttyd examples: enable | disable
       TTYD_ENABLED: enable
+      # tmux session name used behind ttyd
+      # TTYD_TMUX_SESSION: lamportsfactory-main
+      # ttyd font examples:
+      # TTYD_FONT_FAMILY: "JetBrainsMono Nerd Font, Symbols Nerd Font Mono, monospace"
     volumes:
       - ..:/src
       - ./workspace:/app/workspace

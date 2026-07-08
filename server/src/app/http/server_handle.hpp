@@ -2,6 +2,7 @@
 
 #include "app/build/build_log_buffer.hpp"
 #include "app/build/build_manager.hpp"
+#include "app/compiler/compiler_backend.hpp"
 #include "app/config/config.hpp"
 #include "app/events/event_bus.hpp"
 
@@ -9,12 +10,14 @@ namespace lf {
 
 class server_handle {
 public:
-  server_handle(const app_config& config, event_bus& bus,
+  server_handle(const app_config& config, const compiler_backend& compiler,
+                event_bus& bus,
                 build_manager& manager, build_log_buffer& log_buffer);
   void run() const;
 
 private:
   const app_config& config;
+  const compiler_backend& compiler;
   event_bus& bus;
   build_manager& manager;
   build_log_buffer& log_buffer;

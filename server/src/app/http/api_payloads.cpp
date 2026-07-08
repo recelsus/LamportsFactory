@@ -18,7 +18,12 @@ std::string config_json(const app_config& config) {
   out << "\"reload_debounce_ms\":" << config.reload_debounce_ms << ",";
   out << "\"reload_retry_ms\":" << config.reload_retry_ms << ",";
   out << "\"base_url\":\"" << json_escape(config.base_url) << "\",";
-  out << "\"latex_engine\":\"" << json_escape(config.latex_engine) << "\",";
+  out << "\"workspace_dir\":\"" << json_escape(config.workspace_dir) << "\",";
+  out << "\"main_document\":\"" << json_escape(config.main_document) << "\",";
+  out << "\"document_extension\":\"" << json_escape(config.document_extension)
+      << "\",";
+  out << "\"compiler_backend\":\"" << json_escape(config.compiler_backend)
+      << "\",";
   out << "\"layout_mode\":\"" << json_escape(config.layout_mode) << "\",";
   out << "\"ttyd_enabled\":" << (config.ttyd_enabled ? "true" : "false")
       << ",";
@@ -30,7 +35,7 @@ std::string config_json(const app_config& config) {
 std::string build_snapshot_json(const app_config& config,
                                 build_manager& manager) {
   const build_snapshot snap = manager.snapshot();
-  const auto files = list_tex_documents(config);
+  const auto files = list_documents(config);
   std::ostringstream body;
   body << "{\"status\":\"" << snap.status << "\",";
   body << "\"building\":" << (snap.building ? "true" : "false") << ",";
@@ -45,8 +50,8 @@ std::string build_snapshot_json(const app_config& config,
   if (!snap.last_error.empty()) {
     body << ",\"last_error\":\"" << json_escape(snap.last_error) << "\"";
   }
-  if (!snap.current_main.empty()) {
-    body << ",\"tex_main\":\"" << json_escape(snap.current_main) << "\"";
+  if (!snap.current_document.empty()) {
+    body << ",\"main_document\":\"" << json_escape(snap.current_document) << "\"";
   }
   body << ",\"files\":[";
   for (std::size_t i = 0; i < files.size(); ++i) {

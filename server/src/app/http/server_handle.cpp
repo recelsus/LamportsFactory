@@ -17,7 +17,8 @@ namespace lf {
 namespace {
 
 void configure_routes(httplib::Server& server, const app_config& config,
-                      event_bus& bus, build_manager& manager,
+                      const compiler_backend& compiler, event_bus& bus,
+                      build_manager& manager,
                       build_log_buffer& log_buffer) {
   server.Get("/healthz", [&](const httplib::Request& request,
                              httplib::Response& response) {
@@ -62,7 +63,7 @@ void configure_routes(httplib::Server& server, const app_config& config,
     if (!ensure_basic_auth(config, request, response)) {
       return;
     }
-    write_pdf_response(config, manager, request, response);
+    write_pdf_response(config, compiler, manager, request, response);
   });
 
   server.Post("/api/build", [&](const httplib::Request& request,
@@ -118,9 +119,9 @@ void configure_routes(httplib::Server& server, const app_config& config,
     if (!ensure_basic_auth(config, request, response)) {
       return;
     }
-    const auto files = list_tex_documents(config);
+    const auto files = list_documents(config);
     const std::string current =
-        manager.current_main().empty() ? config.tex_main : manager.current_main();
+        manager.current_document().empty() ? config.main_document : manager.current_document();
     std::ostringstream body;
     body << "{\"files\":[";
     for (std::size_t i = 0; i < files.size(); ++i) {
@@ -138,24 +139,27 @@ void configure_routes(httplib::Server& server, const app_config& config,
     if (!ensure_basic_auth(config, request, response)) {
       return;
     }
-    const std::string target =
-        request.has_param("tex") ? trim_copy(request.get_param_value("tex")) : "";
+    std::string target;
+    if (request.has_param("document")) {
+      target = trim_copy(request.get_param_value("document"));
+    }
     if (target.empty()) {
       set_json_response(config, response, 400,
-                        "{\"error\":\"missing tex parameter\"}");
+                        "{\"error\":\"missing document parameter\"}");
       return;
     }
-    const std::string normalised = resolve_tex_document(config, target);
+    const std::string normalised = resolve_document(config, target);
     if (normalised.empty()) {
-      set_json_response(config, response, 404, "{\"error\":\"tex not found\"}");
+      set_json_response(config, response, 404,
+                        "{\"error\":\"document not found\"}");
       return;
     }
-    if (manager.set_main_target(normalised)) {
+    if (manager.set_main_document(normalised)) {
       manager.enqueue_build("main_changed");
     }
     set_json_response(config, response, 200,
-                      "{\"ok\":true,\"tex_main\":\"" +
-                          json_escape(manager.current_main()) + "\"}");
+                      "{\"ok\":true,\"main_document\":\"" +
+                          json_escape(manager.current_document()) + "\"}");
   });
 
   server.Get("/api/config", [&](const httplib::Request& request,
@@ -240,15 +244,17 @@ void configure_routes(httplib::Server& server, const app_config& config,
 
 }  // namespace
 
-server_handle::server_handle(const app_config& config, event_bus& bus,
+server_handle::server_handle(const app_config& config,
+                             const compiler_backend& compiler, event_bus& bus,
                              build_manager& manager,
                              build_log_buffer& log_buffer)
-    : config(config), bus(bus), manager(manager), log_buffer(log_buffer) {}
+    : config(config), compiler(compiler), bus(bus), manager(manager),
+      log_buffer(log_buffer) {}
 
 void server_handle::run() const {
   httplib::Server server;
   server.set_mount_point("/static", config.static_dir);
-  configure_routes(server, config, bus, manager, log_buffer);
+  configure_routes(server, config, compiler, bus, manager, log_buffer);
   if (!server.listen(config.server_addr, config.server_port)) {
     std::cerr << "failed to listen on " << config.server_addr << ':'
               << config.server_port << '\n';
