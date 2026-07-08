@@ -1,6 +1,6 @@
 # LamportsFactory
 
-LamportsFactory watches LaTeX / Typst files in a mounted directory and previews the generated PDF in a browser.
+指定ディレクトリの LaTeX / Typst ファイルを監視して、生成されたPDFをブラウザでプレビューします。
 
 ## Image
 
@@ -11,13 +11,12 @@ ghcr.io/recelsus/lamports-factory:typst-latest
 
 ## Docker Compose
 
-Create local directories first.
+作業用ディレクトリを作成します。
 
 ```bash
 mkdir -p workspace volumes/texmf volumes/fonts volumes/nvim
 ```
-
-Create `docker-compose.yml`.
+`docker-compose.yml` を作成します。
 
 ```yaml
 services:
@@ -54,9 +53,9 @@ services:
 docker compose up -d
 ```
 
-## Typst
+## Typst で使う場合
 
-To use the Typst image, change the image and document settings.
+Typst 版を利用する場合は、image と文書設定を変更します。
 
 ```yaml
 image: ghcr.io/recelsus/lamports-factory:typst-latest
@@ -81,52 +80,52 @@ environment:
 ## Directory
 
 ```text
-workspace/       Files to edit: .tex / .typ
-volumes/texmf/   Additional LaTeX packages and local texmf files
-volumes/fonts/   Additional fonts
-volumes/nvim/    nvim config, plugins, and cache
+workspace/       編集する .tex/.typ ファイル
+volumes/texmf/   LaTeX用の追加パッケージやローカル texmf
+volumes/fonts/   追加フォント
+volumes/nvim/    nvim設定、プラグイン、キャッシュ
 ```
 
 ## Config
 
-Common environment variables:
+代表的な環境変数です。
 
 ```text
-BASE_URL                 Path only. Examples: / | /lamports-factory
-MAIN_DOCUMENT            Initial document. If omitted, backend default is used
+BASE_URL                 path のみ。例: / | /lamports-factory
+MAIN_DOCUMENT            初期ビルド対象の文書。未指定時は backend ごとの既定値
 DOCUMENT_EXTENSION       .tex | .typ
 COMPILER_BACKEND         latex | typst
-BUILD_DIR_NAME           Build directory name created beside each document
+BUILD_DIR_NAME           各文書ディレクトリに作成する build ディレクトリ名
 LAYOUT_MODE              preview | split
 TTYD_ENABLED             enable | disable
-NVIM_CONFIG_REPO         nvim config repository. If omitted, clone is skipped
-NVIM_BOOTSTRAP_ON_INIT   enable | disable. Default: enable
+NVIM_CONFIG_REPO         nvim 設定リポジトリ。未指定時は clone しない
+NVIM_BOOTSTRAP_ON_INIT   enable | disable。未指定時は enable
 ```
 
-LaTeX-only variables:
+LaTeX 版で利用する環境変数です。
 
 ```text
 LATEX_BUILD_TOOL         latexmk | tectonic
 LATEX_ENGINE             lualatex | xelatex | pdflatex | platex | uplatex
-LATEXMK_OPTS             Extra latexmk options
-TECTONIC_OPTS            Extra tectonic options
+LATEXMK_OPTS             latexmk のオプションを直接指定
+TECTONIC_OPTS            tectonic のオプションを直接指定
 ```
 
-Typst-only variables:
+Typst 版で利用する環境変数です。
 
 ```text
-TYPST_OPTS               Extra options passed to typst compile
+TYPST_OPTS               typst compile に渡す追加オプション
 ```
 
 ## Third-Party Licenses
 
-This project includes or vendors the following third-party libraries.
+このプロジェクトでは以下の外部ライブラリを同梱または vendoring しています。
 
 ```text
 cpp-httplib              MIT License
 PDF.js                   Apache License 2.0
 ```
 
-Container images also install third-party tools such as TeX Live, Typst, Neovim, ttyd, tmux, nginx, and related packages. Those tools are distributed under their respective licenses.
+コンテナイメージには TeX Live、Typst、Neovim、ttyd、tmux、nginx などの外部ツールも含まれます。これらは各プロジェクトのライセンスに従います。
 
-See [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md) for more details.
+詳細は [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md) を参照してください。
