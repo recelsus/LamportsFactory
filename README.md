@@ -2,6 +2,8 @@
 
 LamportsFactory watches LaTeX / Typst files in a mounted directory and previews the generated PDF in a browser.
 
+![LamportsFactory screenshot](./docs/images/screenshot.png)
+
 ## Image
 
 ```text

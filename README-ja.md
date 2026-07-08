@@ -2,6 +2,8 @@
 
 指定ディレクトリの LaTeX / Typst ファイルを監視して、生成されたPDFをブラウザでプレビューします。
 
+![LamportsFactory screenshot](./docs/images/screenshot.png)
+
 ## Image
 
 ```text

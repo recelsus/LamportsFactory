@@ -9,10 +9,12 @@ on:
     paths-ignore:
       - "README*.md"
       - "THIRD_PARTY_NOTICES.md"
+      - "docs/**"
   pull_request:
     paths-ignore:
       - "README*.md"
       - "THIRD_PARTY_NOTICES.md"
+      - "docs/**"
   workflow_dispatch:
 
 permissions:
