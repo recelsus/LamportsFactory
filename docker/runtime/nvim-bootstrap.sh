@@ -8,6 +8,8 @@ cache_home="${NVIM_CACHE_HOME:-/app/nvim/cache}"
 state_home="${NVIM_STATE_HOME:-/app/nvim/state}"
 backend="$(printf '%s' "${COMPILER_BACKEND:-latex}" | tr '[:upper:]' '[:lower:]')"
 marker="${data_home}/.lamportsfactory-${backend}-bootstrap"
+fzf_native_dir="${data_home}/nvim/lazy/telescope-fzf-native.nvim"
+fzf_native_lib="${fzf_native_dir}/build/libfzf.so"
 
 require_command() {
   if ! command -v "$1" >/dev/null 2>&1; then
@@ -19,6 +21,8 @@ require_command() {
 check_backend_tools() {
   require_command git
   require_command nvim
+  require_command make
+  require_command cc
   case "$backend" in
     latex)
       require_command latexmk
@@ -30,6 +34,17 @@ check_backend_tools() {
       echo "no nvim bootstrap preflight profile for backend: $backend" >&2
       ;;
   esac
+}
+
+build_telescope_fzf_native() {
+  if [ ! -d "$fzf_native_dir" ]; then
+    return 0
+  fi
+  if [ -f "$fzf_native_lib" ]; then
+    return 0
+  fi
+  echo "building telescope-fzf-native.nvim" >&2
+  make -C "$fzf_native_dir"
 }
 
 export XDG_CONFIG_HOME="$config_root"
@@ -58,7 +73,7 @@ if [ ! -f "$config_dir/init.lua" ] && [ ! -f "$config_dir/init.vim" ]; then
   exit 0
 fi
 
-if [ -f "$marker" ] && [ "${NVIM_BOOTSTRAP_FORCE:-0}" != "1" ]; then
+if [ -f "$marker" ] && [ "${NVIM_BOOTSTRAP_FORCE:-0}" != "1" ] && [ -f "$fzf_native_lib" ]; then
   exit 0
 fi
 
@@ -73,6 +88,8 @@ nvim --headless \
   "+lua assert(pcall(require, 'mason'), 'mason.nvim is not available')" \
   "+lua assert(pcall(require, 'nvim-treesitter.configs'), 'nvim-treesitter is not available')" \
   +qa
+
+build_telescope_fzf_native
 
 case "$backend" in
   latex)

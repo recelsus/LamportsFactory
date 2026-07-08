@@ -63,7 +63,6 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-       biber \
        bash \
        ca-certificates \
        curl \
@@ -71,6 +70,7 @@ RUN apt-get update \
        fonts-noto-cjk \
        fonts-noto-core \
        fzf \
+       gcc \
        git \
        jq \
        make \
