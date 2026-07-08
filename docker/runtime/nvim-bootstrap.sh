@@ -86,7 +86,7 @@ fi
 nvim --headless \
   "+lua require('lazy').load({ plugins = { 'mason.nvim', 'nvim-treesitter' } })" \
   "+lua assert(pcall(require, 'mason'), 'mason.nvim is not available')" \
-  "+lua assert(pcall(require, 'nvim-treesitter.configs'), 'nvim-treesitter is not available')" \
+  "+lua assert(pcall(require, 'nvim-treesitter'), 'nvim-treesitter is not available')" \
   +qa
 
 build_telescope_fzf_native

@@ -73,6 +73,7 @@ RUN apt-get update \
        gcc \
        git \
        jq \
+       libc6-dev \
        make \
        ncurses-term \
        nginx-light \
