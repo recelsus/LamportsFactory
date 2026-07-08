@@ -5,8 +5,8 @@ LamportsFactory watches LaTeX / Typst files in a mounted directory and previews 
 ## Image
 
 ```text
-ghcr.io/recelsus/lamports-factory:latex-latest
-ghcr.io/recelsus/lamports-factory:typst-latest
+ghcr.io/recelsus/lamportsfactory:latex-latest
+ghcr.io/recelsus/lamportsfactory:typst-latest
 ```
 
 ## Docker Compose
@@ -22,7 +22,7 @@ Create `docker-compose.yml`.
 ```yaml
 services:
   lamports-factory:
-    image: ghcr.io/recelsus/lamports-factory:latex-latest
+    image: ghcr.io/recelsus/lamportsfactory:latex-latest
     container_name: lamports-factory
     environment:
       # path only. examples: / | /lamports-factory
@@ -59,7 +59,7 @@ docker compose up -d
 To use the Typst image, change the image and document settings.
 
 ```yaml
-image: ghcr.io/recelsus/lamports-factory:typst-latest
+image: ghcr.io/recelsus/lamportsfactory:typst-latest
 environment:
   # path only. examples: / | /lamports-factory
   BASE_URL: /

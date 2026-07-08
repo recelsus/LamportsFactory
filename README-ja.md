@@ -5,8 +5,8 @@
 ## Image
 
 ```text
-ghcr.io/recelsus/lamports-factory:latex-latest
-ghcr.io/recelsus/lamports-factory:typst-latest
+ghcr.io/recelsus/lamportsfactory:latex-latest
+ghcr.io/recelsus/lamportsfactory:typst-latest
 ```
 
 ## Docker Compose
@@ -21,7 +21,7 @@ mkdir -p workspace volumes/texmf volumes/fonts volumes/nvim
 ```yaml
 services:
   lamports-factory:
-    image: ghcr.io/recelsus/lamports-factory:latex-latest
+    image: ghcr.io/recelsus/lamportsfactory:latex-latest
     container_name: lamports-factory
     environment:
       # path only. examples: / | /lamports-factory
@@ -58,7 +58,7 @@ docker compose up -d
 Typst 版を利用する場合は、image と文書設定を変更します。
 
 ```yaml
-image: ghcr.io/recelsus/lamports-factory:typst-latest
+image: ghcr.io/recelsus/lamportsfactory:typst-latest
 environment:
   # path only. examples: / | /lamports-factory
   BASE_URL: /

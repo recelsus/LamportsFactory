@@ -82,15 +82,13 @@ jobs:
       - name: Prepare image tags
         id: meta
         shell: bash
-        env:
-          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           image="ghcr.io/${GITHUB_REPOSITORY,,}"
           backend="${{ matrix.backend }}"
           short_sha="${GITHUB_SHA::12}"
           tags="${image}:${backend}-${short_sha}"
 
-          if [ "${GITHUB_REF_TYPE}" = "branch" ] && [ "${GITHUB_REF_NAME}" = "${DEFAULT_BRANCH:-master}" ]; then
+          if [ "${GITHUB_REF_TYPE}" = "branch" ] && [ "${GITHUB_REF_NAME}" = "master" ]; then
             tags="${tags}"$'\n'"${image}:${backend}-latest"
           fi
 

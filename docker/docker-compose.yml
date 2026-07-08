@@ -1,6 +1,6 @@
 services:
   lamports-factory:
-    image: ghcr.io/recelsus/lamports-factory:latex-latest
+    image: ghcr.io/recelsus/lamportsfactory:latex-latest
     container_name: lamports-factory
     environment:
       # path only. examples: / | /lamports-factory
