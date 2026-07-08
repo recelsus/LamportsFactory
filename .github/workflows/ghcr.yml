@@ -6,7 +6,13 @@ on:
       - master
     tags:
       - "v*"
+    paths-ignore:
+      - "README*.md"
+      - "THIRD_PARTY_NOTICES.md"
   pull_request:
+    paths-ignore:
+      - "README*.md"
+      - "THIRD_PARTY_NOTICES.md"
   workflow_dispatch:
 
 permissions:
