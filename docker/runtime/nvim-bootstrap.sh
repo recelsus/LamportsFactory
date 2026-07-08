@@ -23,6 +23,7 @@ check_backend_tools() {
   require_command nvim
   require_command make
   require_command cc
+  require_command tree-sitter
   case "$backend" in
     latex)
       require_command latexmk
@@ -45,6 +46,13 @@ build_telescope_fzf_native() {
   fi
   echo "building telescope-fzf-native.nvim" >&2
   make -C "$fzf_native_dir"
+}
+
+install_treesitter_parsers() {
+  TS_LANGS="$1" nvim --headless \
+    "+lua require('lazy').load({ plugins = { 'nvim-treesitter' } })" \
+    "+lua local langs = vim.split(vim.env.TS_LANGS or '', ' ', { trimempty = true }); local ok, ts = pcall(require, 'nvim-treesitter'); if ok and type(ts.install) == 'function' then local task = ts.install(langs, { summary = true }); if type(task) == 'table' and type(task.wait) == 'function' then local success = task:wait(300000); if success == false then error('nvim-treesitter parser installation failed') end end elseif vim.fn.exists(':TSInstallSync') == 2 then vim.cmd('TSInstallSync ' .. table.concat(langs, ' ')) elseif vim.fn.exists(':TSInstall') == 2 then vim.cmd('TSInstall ' .. table.concat(langs, ' ')) else error('nvim-treesitter install API was not found') end" \
+    +qa
 }
 
 export XDG_CONFIG_HOME="$config_root"
@@ -94,17 +102,17 @@ build_telescope_fzf_native
 case "$backend" in
   latex)
     nvim --headless \
-      "+lua require('lazy').load({ plugins = { 'mason.nvim', 'nvim-treesitter' } })" \
+      "+lua require('lazy').load({ plugins = { 'mason.nvim' } })" \
       "+MasonInstall texlab" \
-      "+TSInstallSync latex bibtex lua" \
       +qa
+    install_treesitter_parsers "latex bibtex lua"
     ;;
   typst)
     nvim --headless \
-      "+lua require('lazy').load({ plugins = { 'mason.nvim', 'nvim-treesitter' } })" \
+      "+lua require('lazy').load({ plugins = { 'mason.nvim' } })" \
       "+MasonInstall tinymist" \
-      "+TSInstallSync typst lua" \
       +qa
+    install_treesitter_parsers "typst lua"
     ;;
   *)
     echo "no nvim bootstrap profile for backend: $backend; skipping backend tools" >&2

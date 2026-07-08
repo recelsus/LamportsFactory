@@ -27,6 +27,7 @@ ARG USER_NAME=app
 ARG USER_ID=1000
 ARG GROUP_ID=1000
 ARG NVIM_VERSION=v0.11.3
+ARG TREE_SITTER_CLI_VERSION=latest
 ARG TTYD_VERSION=1.7.7
 ARG TYPST_VERSION=latest
 ARG DOCUMENT_BACKEND=latex
@@ -87,6 +88,7 @@ RUN apt-get update \
        tmux \
        unzip \
        xz-utils \
+    && npm install -g "tree-sitter-cli@${TREE_SITTER_CLI_VERSION}" \
     && curl -fsSL "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux-x86_64.tar.gz" \
        -o /tmp/nvim.tar.gz \
     && curl -fsSL "https://github.com/tsl0922/ttyd/releases/download/${TTYD_VERSION}/ttyd.x86_64" \
